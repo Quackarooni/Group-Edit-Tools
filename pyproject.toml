@@ -1,0 +1,3 @@
+[tool.ruff.lint]
+# Module level import not at top of file (`E402`).
+ignore = ["E402"]
