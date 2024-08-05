@@ -35,18 +35,19 @@ def fetch_tree_of_active_node(context=None):
 
 
 def is_group_valid(tree, context):
-    try:
-        return not (tree is None or tree.is_embedded_data)
-    except AttributeError:
-        return False
+    return not (tree is None or tree.is_embedded_data)
 
 
 def active_group_poll(cls, context):
-    if not context.active_node.select:
-        return False
+    try:
+        if not context.active_node.select:
+            return False
 
-    tree = fetch_tree_of_active_node(context)
-    return is_group_valid(tree, context)
+        tree = fetch_tree_of_active_node(context)
+        return is_group_valid(tree, context)
+
+    except AttributeError:
+        return False
 
 
 def group_poll(cls, context):
