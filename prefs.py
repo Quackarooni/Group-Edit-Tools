@@ -8,8 +8,8 @@ from .ui import (
     refreshable_classes,
     register_overriding_classes, 
     unregister_overriding_classes,
-    )
-
+    should_display_warning
+)
 
 def refresh_ui(self, _context):
     for cls in refreshable_classes:
@@ -72,7 +72,7 @@ class GroupEditToolsPrefs(AddonPreferences):
         layout = self.layout
         layout.prop(self, "panel_category")
         layout.prop(self, "override_default_ui")
-        if not self.override_default_ui:
+        if not self.override_default_ui and should_display_warning():
             layout.label(text="For changes to fully apply, please restart Blender.", icon="ERROR")
         
         keymap_layout.draw_keyboard_shorcuts(self, layout, context)

@@ -8,6 +8,9 @@ from . import draw
 from .. import utils
 
 
+has_ui_been_overridden = False
+
+
 class RefreshableBaseClass:
     bl_category = "Edit Group"
     default_bl_category = "Edit Group"
@@ -86,7 +89,14 @@ class NODE_PT_modified_node_tree_properties(Panel):
         return
 
 
+def should_display_warning():
+    return has_ui_been_overridden
+
+
 def register_overriding_classes():
+    global has_ui_been_overridden
+    has_ui_been_overridden = True
+
     for cls in overriding_classes:
         original_class_name = getattr(cls, "bl_idname", cls.__name__)
         original_class = getattr(space_node, original_class_name)
