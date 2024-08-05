@@ -4,7 +4,7 @@ from bpy.types import Menu, Panel
 from bl_ui import space_node
 from bl_ui.space_node import NODE_PT_node_tree_interface, NODE_PT_node_tree_properties
 
-from . import draw, popups
+from . import draw
 from .. import utils
 
 
@@ -99,7 +99,6 @@ refreshable_classes = (
 classes = (
     *overriding_classes,
     *refreshable_classes,
-    *popups.classes,
     GROUP_TOOLS_MT_active_interface_context_menu,
 )
 

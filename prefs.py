@@ -50,19 +50,8 @@ class GroupEditToolsPrefs(AddonPreferences):
         update=refresh_ui,
     )
 
-    popup_width: IntProperty(
-        name="Pop-up Width",
-        default=250,
-        min=50,
-        soft_min=150,
-        soft_max=500,
-        max=9999,
-        description="Specifies the width of the pop-up panels",
-    )
-
     def draw(self, context):
         layout = self.layout
-        layout.prop(self, "popup_width")
         layout.prop(self, "panel_category")
         
         keymap_layout.draw_keyboard_shorcuts(self, layout, context)

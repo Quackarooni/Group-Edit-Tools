@@ -3,11 +3,6 @@ from .operators import (
     GROUP_TOOLS_OT_copy_from_active,
 )
 
-from .ui.popups import (
-    GROUP_TOOLS_OT_active_nodegroup_properties_popup,
-    GROUP_TOOLS_OT_active_nodegroup_sockets_popup,
-    GROUP_TOOLS_OT_group_sockets_popup,
-)
 
 keymap_info = {"keymap_name" : "Node Editor", "space_type" : "NODE_EDITOR",}
 keymap_info_2 = {"keymap_name" : "User Interface", "space_type" : "EMPTY",}
@@ -19,11 +14,6 @@ keymap_structure = KeymapStructure(
         ),
     "Active Nodegroup": (
         KeymapItemDef(GROUP_TOOLS_OT_copy_from_active.bl_idname, **keymap_info),
-        ),
-    "Pop-ups": (
-        KeymapItemDef(GROUP_TOOLS_OT_group_sockets_popup.bl_idname, **keymap_info),
-        KeymapItemDef(GROUP_TOOLS_OT_active_nodegroup_sockets_popup.bl_idname, **keymap_info),
-        KeymapItemDef(GROUP_TOOLS_OT_active_nodegroup_properties_popup.bl_idname, **keymap_info),
         ),
     }
 )
