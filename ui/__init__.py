@@ -86,6 +86,26 @@ class NODE_PT_modified_node_tree_properties(Panel):
         return
 
 
+def register_overriding_classes():
+    for cls in overriding_classes:
+        original_class_name = getattr(cls, "bl_idname", cls.__name__)
+        original_class = getattr(space_node, original_class_name)
+
+        if hasattr(bpy.types, original_class_name):
+            bpy.utils.unregister_class(original_class)
+        bpy.utils.register_class(cls)
+
+
+def unregister_overriding_classes():
+    for cls in overriding_classes:
+        original_class_name = getattr(cls, "bl_idname", cls.__name__)
+        original_class = getattr(space_node, original_class_name)
+
+        if hasattr(bpy.types, original_class_name):
+            bpy.utils.unregister_class(cls)
+        bpy.utils.register_class(original_class)
+
+
 overriding_classes = (
     NODE_PT_modified_node_tree_interface,
     NODE_PT_modified_node_tree_properties,
@@ -97,16 +117,12 @@ refreshable_classes = (
 )
 
 classes = (
-    *overriding_classes,
     *refreshable_classes,
     GROUP_TOOLS_MT_active_interface_context_menu,
 )
 
 
 def register():
-    for cls in overriding_classes:
-        bpy.utils.unregister_class(getattr(space_node, cls.bl_idname))
-
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -114,9 +130,6 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-
-    for cls in overriding_classes:
-        bpy.utils.register_class(getattr(space_node, cls.bl_idname))
 
     for cls in refreshable_classes:
         cls.reset_bl_category()

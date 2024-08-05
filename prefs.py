@@ -1,10 +1,14 @@
 import bpy
-from bpy.props import BoolProperty, IntProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, PointerProperty, StringProperty
 from bpy.types import AddonPreferences, PropertyGroup
 
 from .keymaps import keymap_layout
-from .ui import refreshable_classes
 from . import utils
+from .ui import (
+    refreshable_classes,
+    register_overriding_classes, 
+    unregister_overriding_classes,
+    )
 
 
 def refresh_ui(self, _context):
@@ -14,6 +18,13 @@ def refresh_ui(self, _context):
         if hasattr(bpy.types, getattr(cls, "bl_idname", cls.__name__)):
             bpy.utils.unregister_class(cls)
         bpy.utils.register_class(cls)
+
+
+def toggle_overriding_ui(self, _context):
+    if self.override_default_ui:
+        register_overriding_classes()
+    else:
+        unregister_overriding_classes()
 
 
 class CopyFromActiveGroupProps(PropertyGroup):
@@ -43,6 +54,13 @@ class GroupEditToolsPrefs(AddonPreferences):
 
     copy_from_active : PointerProperty(type=CopyFromActiveGroupProps)
 
+    override_default_ui: BoolProperty(
+        name="Override Default UI",
+        default=True,
+        description="Apply changes to the built-in \"Group\" interface to match this addon's features",
+        update=toggle_overriding_ui,
+    )
+
     panel_category : StringProperty(
         name="Panel Category",
         default="Edit Group",
@@ -53,6 +71,9 @@ class GroupEditToolsPrefs(AddonPreferences):
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "panel_category")
+        layout.prop(self, "override_default_ui")
+        if not self.override_default_ui:
+            layout.label(text="For changes to fully apply, please restart Blender.", icon="ERROR")
         
         keymap_layout.draw_keyboard_shorcuts(self, layout, context)
 
@@ -70,7 +91,13 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+    if utils.fetch_user_preferences("override_default_ui"):
+        register_overriding_classes()
+
 
 def unregister():
+    if utils.fetch_user_preferences("override_default_ui"):
+        unregister_overriding_classes()
+
     for cls in classes:
         bpy.utils.unregister_class(cls)
