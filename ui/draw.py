@@ -1,3 +1,5 @@
+import bpy
+
 from .. import utils
 
 
@@ -52,26 +54,35 @@ def group_sockets(tree, layout, context):
         layout.prop(active_item, "default_closed", text="Closed by Default")
 
 
-def group_properties(tree, layout, context):
-    layout.use_property_split = True
-    layout.use_property_decorate = False
+if bpy.app.version >= (4, 2, 0):
+    def group_properties(tree, layout, context):
+        layout.use_property_split = True
+        layout.use_property_decorate = False
 
-    layout.prop(tree, "name", text="Name")
+        layout.prop(tree, "name", text="Name")
 
-    if tree.asset_data:
-        layout.prop(tree.asset_data, "description", text="Description")
-    else:
-        layout.prop(tree, "description", text="Description")
+        if tree.asset_data:
+            layout.prop(tree.asset_data, "description", text="Description")
+        else:
+            layout.prop(tree, "description", text="Description")
 
-    layout.prop(tree, "color_tag")
+        layout.prop(tree, "color_tag")
 
-    if tree.bl_idname == "GeometryNodeTree":
-        header, body = layout.panel("group_usage")
-        header.label(text="Usage")
-        if body:
-            col = body.column(align=True)
-            col.prop(tree, "is_modifier")
-            col.prop(tree, "is_tool")
+        if tree.bl_idname == "GeometryNodeTree":
+            header, body = layout.panel("group_usage")
+            header.label(text="Usage")
+            if body:
+                col = body.column(align=True)
+                col.prop(tree, "is_modifier")
+                col.prop(tree, "is_tool")
+else:
+    def group_properties(tree, layout, context):
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        col = layout.column()
+        col.prop(tree, "is_modifier")
+        col.prop(tree, "is_tool")
 
 
 def active_group_properties(tree, layout, context):

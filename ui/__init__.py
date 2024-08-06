@@ -42,7 +42,10 @@ class GROUP_TOOLS_PT_active_group_properties(RefreshableBaseClass, Panel):
     bl_category = "Edit Group"
     bl_order = 2
 
-    poll = classmethod(utils.active_group_poll)
+    if bpy.app.version >= (4, 2, 0):
+        poll = classmethod(utils.active_group_poll)
+    else:
+        poll = classmethod(utils.active_group_old_props_poll)
 
     def draw(self, context):
         group = utils.fetch_tree_of_active_node(context)
@@ -81,7 +84,10 @@ class NODE_PT_modified_node_tree_properties(Panel):
     bl_category = "Group"
     bl_label = NODE_PT_node_tree_properties.bl_label
 
-    poll = classmethod(utils.group_poll)
+    if bpy.app.version >= (4, 2, 0):
+        poll = classmethod(utils.group_poll)
+    else:
+        poll = classmethod(utils.group_old_props_poll)
 
     def draw(self, context):
         tree = context.space_data.edit_tree

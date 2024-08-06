@@ -28,8 +28,10 @@ def toggle_overriding_ui(self, _context):
 
 
 class CopyFromActiveGroupProps(PropertyGroup):
-    description : BoolProperty(name="Description", default=False)
-    color_tag   : BoolProperty(name="Color Tag", default=True)
+    if bpy.app.version >= (4, 2, 0):
+        description : BoolProperty(name="Description", default=False)
+        color_tag   : BoolProperty(name="Color Tag", default=True)
+        
     is_modifier : BoolProperty(name="Modifier Flag", default=True)
     is_tool     : BoolProperty(name="Tool Flag", default=True)
 

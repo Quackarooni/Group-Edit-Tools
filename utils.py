@@ -56,3 +56,23 @@ def group_poll(cls, context):
         return is_group_valid(tree, context)
     except AttributeError:
         return False
+
+
+def active_group_old_props_poll(cls, context):
+    try:
+        if not context.active_node.select:
+            return False
+
+        tree = fetch_tree_of_active_node(context)
+        return (tree.bl_idname == "GeometryNodeTree") and is_group_valid(tree, context)
+
+    except AttributeError:
+        return False
+
+
+def group_old_props_poll(cls, context):
+    try:
+        tree = context.space_data.edit_tree
+        return (tree.bl_idname == "GeometryNodeTree") and is_group_valid(tree, context)
+    except AttributeError:
+        return False
