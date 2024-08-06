@@ -84,20 +84,32 @@ else:
         col.prop(tree, "is_modifier")
         col.prop(tree, "is_tool")
 
+if bpy.app.version >= (4, 1, 0):
+    def active_group_properties(tree, layout, context):
+        layout.use_property_split = True
+        layout.use_property_decorate = False
 
-def active_group_properties(tree, layout, context):
+        group_properties(tree, layout, context)
+
+        header, body = layout.panel("copy_attributes")
+        header.label(text="Copy Attributes")
+        if body:
+            copy_properties(body)
+else:
+    def active_group_properties(tree, layout, context):
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        group_properties(tree, layout, context)
+
+
+def copy_properties(layout):
     layout.use_property_split = True
     layout.use_property_decorate = False
+    
+    col = layout.column(align=True)
+    copy_props = utils.fetch_user_preferences("copy_from_active")
+    for prop_name in copy_props.properties():
+        col.prop(copy_props, prop_name)
 
-    group_properties(tree, layout, context)
-
-    header, body = layout.panel("copy_attributes")
-    header.label(text="Copy Attributes")
-    if body:
-        col = body.column(align=True)
-        
-        copy_props = utils.fetch_user_preferences("copy_from_active")
-        for prop_name in copy_props.properties():
-            col.prop(copy_props, prop_name)
-
-        layout.operator("node.group_edit_copy_from_active")
+    layout.operator("node.group_edit_copy_from_active")

@@ -53,6 +53,32 @@ class GROUP_TOOLS_PT_active_group_properties(RefreshableBaseClass, Panel):
         return
 
 
+if bpy.app.version >= (4, 1, 0):
+    version_specific_classes = []
+else:
+    class GROUP_TOOLS_PT_active_group_copy_attributes(RefreshableBaseClass, Panel):
+        bl_label = "Copy Attributes"
+        bl_space_type = 'NODE_EDITOR'
+        bl_region_type = 'UI'
+        bl_category = "Edit Group"
+        bl_parent_id = GROUP_TOOLS_PT_active_group_properties.__name__
+        bl_order = 2
+
+        if bpy.app.version >= (4, 2, 0):
+            poll = classmethod(utils.active_group_poll)
+        else:
+            poll = classmethod(utils.active_group_old_props_poll)
+
+        def draw(self, context):
+            layout = self.layout
+            draw.copy_properties(layout)
+            return
+
+    version_specific_classes = (
+        GROUP_TOOLS_PT_active_group_copy_attributes,
+    )
+
+
 class GROUP_TOOLS_MT_active_interface_context_menu(Menu):
     bl_label = "Node Tree Interface Specials"
 
@@ -130,6 +156,7 @@ overriding_classes = (
 refreshable_classes = (
     GROUP_TOOLS_PT_PANEL,
     GROUP_TOOLS_PT_active_group_properties,
+    *version_specific_classes
 )
 
 classes = (
