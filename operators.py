@@ -77,13 +77,16 @@ class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
 
     @classmethod
     def poll(cls, context):
-        tree = context.group_edit_tree_to_edit
+        try:
+            tree = context.group_edit_tree_to_edit
 
-        return all((
-            tree is not None,
-            not tree.is_embedded_data,
-            tree.interface.active is not None
-        ))
+            return all((
+                tree is not None,
+                not tree.is_embedded_data,
+                tree.interface.active is not None
+            ))
+        except AttributeError:
+            return False
 
     @staticmethod
     def fetch_all_parents(interface):
@@ -171,8 +174,11 @@ class GROUP_TOOLS_OT_active_interface_item_new(Operator):
 
     @classmethod
     def poll(cls, context):
-        tree = context.group_edit_tree_to_edit
-        return not (tree is None or tree.is_embedded_data)
+        try:
+            tree = context.group_edit_tree_to_edit
+            return not (tree is None or tree.is_embedded_data)
+        except AttributeError:
+            return False
 
     # Returns a valid socket type for the given tree or None.
     @staticmethod
@@ -230,9 +236,12 @@ class GROUP_TOOLS_OT_active_interface_item_duplicate(Operator):
 
     @classmethod
     def poll(cls, context):
-        tree = context.group_edit_tree_to_edit
-        if not (tree is None or tree.is_embedded_data):
-            return (tree.interface.active is not None)
+        try:
+            tree = context.group_edit_tree_to_edit
+            if not (tree is None or tree.is_embedded_data):
+                return (tree.interface.active is not None)
+        except AttributeError:
+            return False
 
     def execute(self, context):
         tree = context.group_edit_tree_to_edit
@@ -253,9 +262,12 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
 
     @classmethod
     def poll(cls, context):
-        tree = context.group_edit_tree_to_edit
-        if not (tree is None or tree.is_embedded_data):
-            return (tree.interface.active is not None)
+        try:
+            tree = context.group_edit_tree_to_edit
+            if not (tree is None or tree.is_embedded_data):
+                return (tree.interface.active is not None)
+        except AttributeError:
+            return False
 
     def execute(self, context):
         tree = context.group_edit_tree_to_edit
