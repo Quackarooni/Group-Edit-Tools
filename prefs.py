@@ -65,7 +65,7 @@ class GroupEditToolsPrefs(AddonPreferences):
 
     panel_category : StringProperty(
         name="Panel Category",
-        default="Edit Group",
+        default="Active Group",
         description="Specifies which sidebar category this addon's UI appears in",
         update=refresh_ui,
     )
