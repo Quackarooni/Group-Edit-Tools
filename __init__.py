@@ -18,7 +18,7 @@
 bl_info = {
     "name": "Group Edit Tools",
     "author": "Quackers",
-    "description": "Addon description here.",
+    "description": "Tools for editing nodegroups",
     "version": (1, 0, 0),
     "blender": (4, 0, 0),
     "location": "Node Editor > N-Panel",
