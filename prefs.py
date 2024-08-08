@@ -39,7 +39,7 @@ class CopyFromActiveGroupProps(PropertyGroup):
         tree = utils.fetch_tree_of_active_node()
 
         props = self.__annotations__
-        if tree.bl_idname != "GeometryNodeTree":
+        if (tree is None) or (tree.bl_idname != "GeometryNodeTree"):
             props = tuple(p for p in props if p not in {"is_modifier", "is_tool"})
 
         return props
