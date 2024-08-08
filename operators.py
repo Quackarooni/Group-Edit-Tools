@@ -21,7 +21,7 @@ class GROUP_TOOLS_OT_copy_from_active(Operator):
         copy_props = tuple(prefs.copy_from_active.props_to_copy)
 
         return all((
-            active_node.select, 
+            getattr(active_node, "select", False), 
             hasattr(active_node, "node_tree"), 
             len(selected_nodes) > 1, 
             len(copy_props)
