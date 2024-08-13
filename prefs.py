@@ -1,5 +1,5 @@
 import bpy
-from bpy.props import BoolProperty, PointerProperty, StringProperty
+from bpy.props import BoolProperty, PointerProperty, StringProperty, IntProperty
 from bpy.types import AddonPreferences, PropertyGroup
 
 from .keymaps import keymap_layout
@@ -70,9 +70,21 @@ class GroupEditToolsPrefs(AddonPreferences):
         update=refresh_ui,
     )
 
+    popup_width: IntProperty(
+        name="Pop-up Width",
+        default=250,
+        min=50,
+        soft_min=150,
+        soft_max=500,
+        max=9999,
+        description="Specifies the width of the pop-up panels",
+    )
+
+
     def draw(self, context):
         layout = self.layout
         layout.prop(self, "panel_category")
+        layout.prop(self, "popup_width")
         layout.prop(self, "override_default_ui")
         if not self.override_default_ui and should_display_warning():
             layout.label(text="For changes to fully apply, please restart Blender.", icon="ERROR")
