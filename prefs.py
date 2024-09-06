@@ -97,6 +97,9 @@ def register():
     if utils.fetch_user_preferences("override_default_ui"):
         register_overriding_classes()
 
+    prefs = utils.fetch_user_preferences()
+    prefs.panel_category = prefs.panel_category
+
 
 def unregister():
     if utils.fetch_user_preferences("override_default_ui"):
