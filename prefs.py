@@ -106,10 +106,11 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    if utils.fetch_user_preferences("override_default_ui"):
+    prefs = utils.fetch_user_preferences()
+    
+    if prefs.override_default_ui:
         register_overriding_classes()
 
-    prefs = utils.fetch_user_preferences()
     prefs.panel_category = prefs.panel_category
 
 
