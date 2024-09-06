@@ -8,7 +8,8 @@ from .ui import (
     refreshable_classes,
     register_overriding_classes, 
     unregister_overriding_classes,
-    should_display_warning
+    should_display_warning,
+    RefreshableBaseClass,
 )
 
 def refresh_ui(self, _context):
@@ -65,7 +66,7 @@ class GroupEditToolsPrefs(AddonPreferences):
 
     panel_category : StringProperty(
         name="Panel Category",
-        default="Active Group",
+        default=RefreshableBaseClass.default_bl_category,
         description="Specifies which sidebar category this addon's UI appears in",
         update=refresh_ui,
     )
