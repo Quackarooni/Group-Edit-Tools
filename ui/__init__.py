@@ -24,7 +24,6 @@ class GROUP_TOOLS_PT_PANEL(RefreshableBaseClass, Panel):
     bl_label = NODE_PT_node_tree_interface.bl_label
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = "UI"
-    bl_category = "Edit Group"
     bl_order = 1
 
     poll = classmethod(utils.active_group_poll)
@@ -39,7 +38,6 @@ class GROUP_TOOLS_PT_active_group_properties(RefreshableBaseClass, Panel):
     bl_label = "Group"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = "Edit Group"
     bl_order = 2
 
     if bpy.app.version >= (4, 2, 0):
@@ -60,7 +58,6 @@ else:
         bl_label = "Copy Attributes"
         bl_space_type = 'NODE_EDITOR'
         bl_region_type = 'UI'
-        bl_category = "Edit Group"
         bl_parent_id = GROUP_TOOLS_PT_active_group_properties.__name__
         bl_order = 2
 
