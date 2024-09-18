@@ -12,7 +12,10 @@ from .ui import (
     RefreshableBaseClass,
 )
 
-def refresh_ui(self, _context):
+def refresh_ui(self=None, _context=None):
+    if self is None:
+        self = utils.fetch_user_preferences()
+        
     for cls in refreshable_classes:
         cls.bl_category = self.panel_category
         
@@ -99,7 +102,7 @@ def register():
     if prefs.override_default_ui:
         register_overriding_classes()
 
-    prefs.panel_category = prefs.panel_category
+    refresh_ui()
 
 
 def unregister():
