@@ -55,11 +55,12 @@ def group_sockets(tree, layout, context):
 
 
 if bpy.app.version >= (4, 3, 0):
-    def group_properties(tree, layout, context):
+    def group_properties(tree, layout, context, **settings):
         layout.use_property_split = True
         layout.use_property_decorate = False
 
         layout.prop(tree, "name", text="Name")
+        default_width_operator = settings.get("default_width_operator", "node.default_group_width_set")
 
         if tree.asset_data:
             layout.prop(tree.asset_data, "description", text="Description")
@@ -69,7 +70,7 @@ if bpy.app.version >= (4, 3, 0):
         layout.prop(tree, "color_tag")
         row = layout.row(align=True)
         row.prop(tree, "default_group_node_width", text="Node Width")
-        row.operator("node.default_group_width_set", text="", icon='NODE')
+        row.operator(default_width_operator, text="", icon='NODE')
 
         if tree.bl_idname == "GeometryNodeTree":
             header, body = layout.panel("group_usage")
@@ -111,7 +112,21 @@ else:
         col.prop(tree, "is_tool")
 
 
-if bpy.app.version >= (4, 1, 0):
+if bpy.app.version >= (4, 3, 0):
+    def active_group_properties(tree, layout, context):
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        group_properties(tree, layout, context, 
+            default_width_operator="group_edit_tools.active_group_default_width_set"
+            )
+
+        header, body = layout.panel("copy_attributes")
+        header.label(text="Copy Attributes")
+        if body:
+            copy_properties(body)
+            
+elif bpy.app.version >= (4, 1, 0):
     def active_group_properties(tree, layout, context):
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -122,6 +137,7 @@ if bpy.app.version >= (4, 1, 0):
         header.label(text="Copy Attributes")
         if body:
             copy_properties(body)
+            
 else:
     def active_group_properties(tree, layout, context):
         layout.use_property_split = True

@@ -282,6 +282,30 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
 
         return {'FINISHED'}
 
+if bpy.app.version >= (4, 3, 0):
+    class GROUP_TOOLS_OT_active_group_default_width_set(Operator):
+        '''Set the width based on the current context'''
+        bl_idname = "group_edit_tools.active_group_default_width_set"
+        bl_label = "Set Default Group Width"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            try:
+                active_node = context.active_node
+                tree = active_node.node_tree
+                if not (tree is None or tree.is_embedded_data):
+                    return (tree.interface.active is not None)
+            except AttributeError:
+                return False
+
+        def execute(self, context):
+            active_node = context.active_node
+            tree = active_node.node_tree
+            
+            tree.default_group_node_width = int(active_node.width)
+            return {'FINISHED'}
+
 
 classes = (
     GROUP_TOOLS_OT_active_interface_item_new,
@@ -295,8 +319,14 @@ classes = (
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
+    
+    if bpy.app.version >= (4, 3, 0):
+        bpy.utils.register_class(GROUP_TOOLS_OT_active_group_default_width_set)
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
+        
+    if bpy.app.version >= (4, 3, 0):
+        bpy.utils.unregister_class(GROUP_TOOLS_OT_active_group_default_width_set)
