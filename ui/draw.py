@@ -54,7 +54,32 @@ def group_sockets(tree, layout, context):
         layout.prop(active_item, "default_closed", text="Closed by Default")
 
 
-if bpy.app.version >= (4, 2, 0):
+if bpy.app.version >= (4, 3, 0):
+    def group_properties(tree, layout, context):
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.prop(tree, "name", text="Name")
+
+        if tree.asset_data:
+            layout.prop(tree.asset_data, "description", text="Description")
+        else:
+            layout.prop(tree, "description", text="Description")
+
+        layout.prop(tree, "color_tag")
+        row = layout.row(align=True)
+        row.prop(tree, "default_group_node_width", text="Node Width")
+        row.operator("node.default_group_width_set", text="", icon='NODE')
+
+        if tree.bl_idname == "GeometryNodeTree":
+            header, body = layout.panel("group_usage")
+            header.label(text="Usage")
+            if body:
+                col = body.column(align=True)
+                col.prop(tree, "is_modifier")
+                col.prop(tree, "is_tool")
+
+elif bpy.app.version >= (4, 2, 0):
     def group_properties(tree, layout, context):
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -75,6 +100,7 @@ if bpy.app.version >= (4, 2, 0):
                 col = body.column(align=True)
                 col.prop(tree, "is_modifier")
                 col.prop(tree, "is_tool")
+
 else:
     def group_properties(tree, layout, context):
         layout.use_property_split = True
@@ -83,6 +109,7 @@ else:
         col = layout.column()
         col.prop(tree, "is_modifier")
         col.prop(tree, "is_tool")
+
 
 if bpy.app.version >= (4, 1, 0):
     def active_group_properties(tree, layout, context):
