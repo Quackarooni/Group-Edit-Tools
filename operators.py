@@ -283,27 +283,38 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
         return {'FINISHED'}
 
 if bpy.app.version >= (4, 3, 0):
-    class GROUP_TOOLS_OT_active_group_default_width_set(Operator):
-        '''Set the width based on the current context'''
-        bl_idname = "group_edit_tools.active_group_default_width_set"
+    class GROUP_TOOLS_OT_selected_group_default_width_set(Operator):
+        '''Set the width based on the current context (applies to all selected nodegroups)'''
+        bl_idname = "group_edit_tools.selected_group_default_width_set"
         bl_label = "Set Default Group Width"
         bl_options = {'REGISTER', 'UNDO'}
 
         @classmethod
         def poll(cls, context):
             try:
-                active_node = context.active_node
-                tree = active_node.node_tree
-                if not (tree is None or tree.is_embedded_data):
-                    return (tree.interface.active is not None)
+                selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
+                return len(selected_nodegroups)
             except AttributeError:
                 return False
 
         def execute(self, context):
-            active_node = context.active_node
-            tree = active_node.node_tree
+            selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
+            old_widths = tuple(n.node_tree.default_group_node_width for n in selected_nodegroups)
+
+            for node in selected_nodegroups:
+                tree = node.node_tree
             
-            tree.default_group_node_width = int(active_node.width)
+                tree.default_group_node_width = int(node.width)
+
+            new_widths = tuple(n.node_tree.default_group_node_width for n in selected_nodegroups)
+            updated_widths = tuple(True for old_width, new_width in zip(old_widths, new_widths) if (old_width != new_width))
+            updated_count = len(updated_widths)
+
+            if updated_count > 0:
+                self.report({"INFO"}, f"Succesfully updated the width of {updated_count} nodegroups.")
+            else:
+                self.report({"WARNING"}, "Nodegroup widths are already up-to-date.")
+
             return {'FINISHED'}
 
 
@@ -321,7 +332,7 @@ def register():
         bpy.utils.register_class(cls)
     
     if bpy.app.version >= (4, 3, 0):
-        bpy.utils.register_class(GROUP_TOOLS_OT_active_group_default_width_set)
+        bpy.utils.register_class(GROUP_TOOLS_OT_selected_group_default_width_set)
 
 
 def unregister():
@@ -329,4 +340,4 @@ def unregister():
         bpy.utils.unregister_class(cls)
         
     if bpy.app.version >= (4, 3, 0):
-        bpy.utils.unregister_class(GROUP_TOOLS_OT_active_group_default_width_set)
+        bpy.utils.unregister_class(GROUP_TOOLS_OT_selected_group_default_width_set)

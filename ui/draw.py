@@ -118,7 +118,7 @@ if bpy.app.version >= (4, 3, 0):
         layout.use_property_decorate = False
 
         group_properties(tree, layout, context, 
-            default_width_operator="group_edit_tools.active_group_default_width_set"
+            default_width_operator="group_edit_tools.selected_group_default_width_set"
             )
 
         header, body = layout.panel("copy_attributes")
