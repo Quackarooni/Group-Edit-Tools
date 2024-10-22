@@ -1,11 +1,15 @@
 import bpy
 
 from .keymap_ui import KeymapItemDef, KeymapStructure, KeymapLayout
-from .operators import (
-    GROUP_TOOLS_OT_copy_from_active,
-    GROUP_TOOLS_OT_selected_group_default_width_set,
-
-)
+if bpy.app.version >= (4, 3, 0):
+    from .operators import (
+        GROUP_TOOLS_OT_copy_from_active,
+        GROUP_TOOLS_OT_selected_group_default_width_set,
+    )
+else:
+    from .operators import (
+        GROUP_TOOLS_OT_copy_from_active,
+    )   
 
 
 keymap_info = {"keymap_name" : "Node Editor", "space_type" : "NODE_EDITOR",}
