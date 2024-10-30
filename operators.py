@@ -311,6 +311,40 @@ if bpy.app.version >= (4, 3, 0):
             updated_count = len(updated_widths)
 
             if updated_count > 0:
+                self.report({"INFO"}, f"Succesfully updated the default width of {updated_count} nodegroups.")
+            else:
+                self.report({"WARNING"}, "Nodegroup widths are already up-to-date.")
+
+            return {'FINISHED'}
+
+
+    class GROUP_TOOLS_OT_selected_group_reset_to_default_width(Operator):
+        '''Set the nodegroup width back to its default (applies to all selected nodegroups)'''
+        bl_idname = "group_edit_tools.selected_group_reset_to_default_width"
+        bl_label = "Reset to Default Width"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            try:
+                selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
+                return len(selected_nodegroups)
+            except AttributeError:
+                return False
+
+        def execute(self, context):
+            selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
+            old_widths = tuple(n.width for n in selected_nodegroups)
+
+            for node in selected_nodegroups:
+                tree = node.node_tree
+                node.width = tree.default_group_node_width
+
+            new_widths = tuple(n.width for n in selected_nodegroups)
+            updated_widths = tuple(True for old_width, new_width in zip(old_widths, new_widths) if (old_width != new_width))
+            updated_count = len(updated_widths)
+
+            if updated_count > 0:
                 self.report({"INFO"}, f"Succesfully updated the width of {updated_count} nodegroups.")
             else:
                 self.report({"WARNING"}, "Nodegroup widths are already up-to-date.")
@@ -318,26 +352,32 @@ if bpy.app.version >= (4, 3, 0):
             return {'FINISHED'}
 
 
-classes = (
-    GROUP_TOOLS_OT_active_interface_item_new,
-    GROUP_TOOLS_OT_active_interface_item_duplicate,
-    GROUP_TOOLS_OT_active_interface_item_remove,
-    GROUP_TOOLS_OT_copy_from_active,
-    GROUP_TOOLS_OT_interface_item_move,
-)
+if bpy.app.version >= (4, 3, 0):
+    classes = (
+        GROUP_TOOLS_OT_active_interface_item_new,
+        GROUP_TOOLS_OT_active_interface_item_duplicate,
+        GROUP_TOOLS_OT_active_interface_item_remove,
+        GROUP_TOOLS_OT_copy_from_active,
+        GROUP_TOOLS_OT_interface_item_move,
+        GROUP_TOOLS_OT_selected_group_default_width_set,
+        GROUP_TOOLS_OT_selected_group_reset_to_default_width,
+    )
+else:
+    classes = (
+        GROUP_TOOLS_OT_active_interface_item_new,
+        GROUP_TOOLS_OT_active_interface_item_duplicate,
+        GROUP_TOOLS_OT_active_interface_item_remove,
+        GROUP_TOOLS_OT_copy_from_active,
+        GROUP_TOOLS_OT_interface_item_move,
+    )
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
     
-    if bpy.app.version >= (4, 3, 0):
-        bpy.utils.register_class(GROUP_TOOLS_OT_selected_group_default_width_set)
-
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
         
-    if bpy.app.version >= (4, 3, 0):
-        bpy.utils.unregister_class(GROUP_TOOLS_OT_selected_group_default_width_set)

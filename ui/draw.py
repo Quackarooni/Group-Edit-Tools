@@ -77,6 +77,7 @@ if bpy.app.version >= (4, 3, 0):
         if is_active_group:
             row = col.row(align=True)
             row.prop(context.active_node, "width", text="Node Width")
+            row.operator("group_edit_tools.selected_group_reset_to_default_width", text="", icon='NODE')
 
         if tree.bl_idname == "GeometryNodeTree":
             header, body = layout.panel("group_usage")
