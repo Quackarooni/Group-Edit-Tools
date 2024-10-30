@@ -61,6 +61,7 @@ if bpy.app.version >= (4, 3, 0):
 
         layout.prop(tree, "name", text="Name")
         default_width_operator = settings.get("default_width_operator", "node.default_group_width_set")
+        is_active_group = settings.get("is_active_group", False)
 
         if tree.asset_data:
             layout.prop(tree.asset_data, "description", text="Description")
@@ -68,9 +69,14 @@ if bpy.app.version >= (4, 3, 0):
             layout.prop(tree, "description", text="Description")
 
         layout.prop(tree, "color_tag")
-        row = layout.row(align=True)
-        row.prop(tree, "default_group_node_width", text="Node Width")
+        col = layout.column(align=True)
+        row = col.row(align=True)
+        row.prop(tree, "default_group_node_width", text="Default Width")
         row.operator(default_width_operator, text="", icon='NODE')
+
+        if is_active_group:
+            row = col.row(align=True)
+            row.prop(context.active_node, "width", text="Node Width")
 
         if tree.bl_idname == "GeometryNodeTree":
             header, body = layout.panel("group_usage")
@@ -118,6 +124,7 @@ if bpy.app.version >= (4, 3, 0):
         layout.use_property_decorate = False
 
         group_properties(tree, layout, context, 
+            is_active_group=True,
             default_width_operator="group_edit_tools.selected_group_default_width_set"
             )
 
