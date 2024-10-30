@@ -82,6 +82,7 @@ class GROUP_TOOLS_MT_active_interface_context_menu(Menu):
     def draw(self, _context):
         layout = self.layout
         layout.operator("group_edit_tools.active_interface_item_duplicate", icon='DUPLICATE')
+        layout.operator("group_edit_tools.active_interface_item_swap_io_type", icon='ARROW_LEFTRIGHT')
         return
 
 

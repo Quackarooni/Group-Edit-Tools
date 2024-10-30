@@ -254,6 +254,80 @@ class GROUP_TOOLS_OT_active_interface_item_duplicate(Operator):
         return {'FINISHED'}
 
 
+class GROUP_TOOLS_OT_active_interface_item_swap_io_type(Operator):
+    '''Swap the input/output type of active item to the opposite type'''
+    bl_idname = "group_edit_tools.active_interface_item_swap_io_type"
+    bl_label = "Swap Input/Output Type"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    props = (
+            "name", 
+            "description", 
+            "hide_value", 
+            "subtype",
+            "default_attribute_name",
+            "default_value",
+            "min_value",
+            "max_value",
+            )
+
+    @staticmethod
+    def relative_position(active_item):
+        base_pos = 0
+        offset = 0
+
+        inputs = (i for i in active_item.parent.interface_items if i.in_out == "INPUT")
+
+        if active_item.in_out == "INPUT":
+            base_pos = 0
+            for i, item in enumerate(inputs):
+                if item == active_item:
+                    offset = i
+                    break
+        else:
+            for item in inputs:
+                base_pos = item.position
+                break
+            offset = active_item.position
+
+        return base_pos + offset
+
+    @classmethod
+    def poll(cls, context):
+        try:
+            tree = context.group_edit_tree_to_edit
+            if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+                active_item = tree.interface.active
+                return active_item.item_type == "SOCKET"
+                    
+        except AttributeError:
+            return False
+
+    def execute(self, context):
+        tree = context.group_edit_tree_to_edit
+        interface = tree.interface
+
+        # Remember active item and position to determine target position.
+        active_item = interface.active
+
+        if active_item.in_out == "OUTPUT":
+            opposite_type = "INPUT"
+        else:
+            opposite_type = "OUTPUT"
+        item = interface.new_socket("Socket", socket_type=active_item.socket_type, in_out=opposite_type)
+
+        for prop in self.props:
+            if hasattr(item, prop):
+                setattr(item, prop, getattr(active_item, prop))
+
+        if active_item is not None:
+            interface.move_to_parent(item, active_item.parent, self.relative_position(active_item))
+
+        interface.remove(active_item)
+        interface.active = item
+        return {'FINISHED'}
+
+
 class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
     '''Remove active item from the interface'''
     bl_idname = "group_edit_tools.interface_item_remove"
@@ -357,6 +431,7 @@ if bpy.app.version >= (4, 3, 0):
         GROUP_TOOLS_OT_active_interface_item_new,
         GROUP_TOOLS_OT_active_interface_item_duplicate,
         GROUP_TOOLS_OT_active_interface_item_remove,
+        GROUP_TOOLS_OT_active_interface_item_swap_io_type,
         GROUP_TOOLS_OT_copy_from_active,
         GROUP_TOOLS_OT_interface_item_move,
         GROUP_TOOLS_OT_selected_group_default_width_set,
@@ -367,6 +442,7 @@ else:
         GROUP_TOOLS_OT_active_interface_item_new,
         GROUP_TOOLS_OT_active_interface_item_duplicate,
         GROUP_TOOLS_OT_active_interface_item_remove,
+        GROUP_TOOLS_OT_active_interface_item_swap_io_type,
         GROUP_TOOLS_OT_copy_from_active,
         GROUP_TOOLS_OT_interface_item_move,
     )
