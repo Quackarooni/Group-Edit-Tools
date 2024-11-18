@@ -34,13 +34,16 @@ def toggle_overriding_ui(self, _context):
 class CopyFromActiveGroupProps(PropertyGroup):
     if bpy.app.version >= (4, 2, 0):
         description : BoolProperty(name="Description", default=False)
+
+    if bpy.app.version >= (4, 3, 0):
+        default_group_node_width : BoolProperty(name="Default Width", default=False)
+
+    if bpy.app.version >= (4, 2, 0):
         color_tag   : BoolProperty(name="Color Tag", default=True)
         
     is_modifier : BoolProperty(name="Modifier Flag", default=True)
     is_tool     : BoolProperty(name="Tool Flag", default=True)
     
-    if bpy.app.version >= (4, 3, 0):
-        default_group_node_width : BoolProperty(name="Default Width", default=True)
 
     def properties(self):
         tree = utils.fetch_tree_of_active_node()
