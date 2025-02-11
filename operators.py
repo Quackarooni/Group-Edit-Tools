@@ -390,7 +390,6 @@ class GROUP_TOOLS_OT_parent_to_panel(Operator):
 
         interface.move_to_parent(active_item, parent, len(parent.interface_items))
         interface.active = active_item
-        #print(interface)
 
         return {'FINISHED'}
 
