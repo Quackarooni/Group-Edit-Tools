@@ -465,27 +465,26 @@ if bpy.app.version >= (4, 3, 0):
 
 
 if bpy.app.version >= (4, 3, 0):
-    classes = (
-        GROUP_TOOLS_OT_active_interface_item_new,
-        GROUP_TOOLS_OT_active_interface_item_duplicate,
-        GROUP_TOOLS_OT_active_interface_item_remove,
-        GROUP_TOOLS_OT_active_interface_item_swap_io_type,
-        GROUP_TOOLS_OT_copy_from_active,
-        GROUP_TOOLS_OT_interface_item_move,
+    version_specific_classes = (
         GROUP_TOOLS_OT_selected_group_default_width_set,
         GROUP_TOOLS_OT_selected_group_reset_to_default_width,
-        GROUP_TOOLS_OT_parent_to_panel,
     )
 else:
-    classes = (
-        GROUP_TOOLS_OT_active_interface_item_new,
-        GROUP_TOOLS_OT_active_interface_item_duplicate,
-        GROUP_TOOLS_OT_active_interface_item_remove,
-        GROUP_TOOLS_OT_active_interface_item_swap_io_type,
-        GROUP_TOOLS_OT_copy_from_active,
-        GROUP_TOOLS_OT_interface_item_move,
-        GROUP_TOOLS_OT_parent_to_panel,
+    version_specific_classes = (
     )
+
+
+classes = (
+    *version_specific_classes,
+    GROUP_TOOLS_OT_active_interface_item_new,
+    GROUP_TOOLS_OT_active_interface_item_duplicate,
+    GROUP_TOOLS_OT_active_interface_item_remove,
+    GROUP_TOOLS_OT_active_interface_item_swap_io_type,
+    GROUP_TOOLS_OT_copy_from_active,
+    GROUP_TOOLS_OT_interface_item_move,
+    GROUP_TOOLS_OT_parent_to_panel,
+
+)
 
 
 def register():
