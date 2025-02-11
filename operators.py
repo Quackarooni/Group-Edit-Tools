@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from bpy.props import EnumProperty
+from bpy.props import EnumProperty, IntProperty
 
 from bl_operators.node import NodeInterfaceOperator
 
@@ -355,6 +355,45 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
         interface.active_index = min(interface.active_index, len(interface.items_tree) - 1)
 
         return {'FINISHED'}
+    
+    
+class GROUP_TOOLS_OT_parent_to_panel(Operator):
+    '''Parents the active item to the specified panel'''
+    bl_idname = "group_edit_tools.parent_to_panel"
+    bl_label = "Parent to Panel"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    parent_index : IntProperty(name="Parent Index", default=0)
+
+    @classmethod
+    def poll(cls, context):
+        try:
+            tree = context.group_edit_tree_to_edit
+            if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+                return context.group_edit_active_item.item_type == 'SOCKET'
+            
+        except AttributeError:
+            return False
+
+    def execute(self, context):
+        tree = context.group_edit_tree_to_edit
+        interface = tree.interface
+        active_item = context.group_edit_active_item
+
+        if active_item is None:
+            return {'CANCELLED'}
+
+        if self.parent_index != -1:
+            parent = interface.items_tree[self.parent_index]
+        else:
+            parent = utils.fetch_base_panel(tree)
+
+        interface.move_to_parent(active_item, parent, len(parent.interface_items))
+        interface.active = active_item
+        #print(interface)
+
+        return {'FINISHED'}
+
 
 if bpy.app.version >= (4, 3, 0):
     class GROUP_TOOLS_OT_selected_group_default_width_set(Operator):
@@ -436,6 +475,7 @@ if bpy.app.version >= (4, 3, 0):
         GROUP_TOOLS_OT_interface_item_move,
         GROUP_TOOLS_OT_selected_group_default_width_set,
         GROUP_TOOLS_OT_selected_group_reset_to_default_width,
+        GROUP_TOOLS_OT_parent_to_panel,
     )
 else:
     classes = (
@@ -445,6 +485,7 @@ else:
         GROUP_TOOLS_OT_active_interface_item_swap_io_type,
         GROUP_TOOLS_OT_copy_from_active,
         GROUP_TOOLS_OT_interface_item_move,
+        GROUP_TOOLS_OT_parent_to_panel,
     )
 
 

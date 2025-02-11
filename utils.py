@@ -34,6 +34,25 @@ def fetch_tree_of_active_node(context=None):
     return tree
 
 
+def fetch_base_panel(group):
+    new_socket = group.interface.new_socket(name="DUMMY_SOCKET")
+    panel =  new_socket.parent
+    group.interface.remove(new_socket)
+    return panel
+
+
+def fetch_group_items(group, item_type=None, include_base_panel=False):
+    if item_type is None:
+        return group.interface.items_tree
+    else:
+        if include_base_panel:
+            yield fetch_base_panel(group)
+
+        panels = (i for i in group.interface.items_tree if i.item_type == item_type)
+        for item in panels:
+            yield item
+
+
 def is_group_valid(tree, context):
     return not (tree is None or tree.is_embedded_data)
 

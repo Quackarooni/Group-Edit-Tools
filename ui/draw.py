@@ -14,6 +14,8 @@ field_socket_types = {
 def side_buttons(tree, layout):
     col = layout.column(align=True)
     col.context_pointer_set("group_edit_tree_to_edit", tree)
+    col.context_pointer_set("group_edit_active_item", tree.interface.active)
+
     col.operator_menu_enum("group_edit_tools.interface_item_new", "item_type", icon='ADD', text="")
     col.operator("group_edit_tools.interface_item_remove", icon='REMOVE', text="")
     col.separator()

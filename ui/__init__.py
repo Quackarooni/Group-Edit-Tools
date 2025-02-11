@@ -83,6 +83,36 @@ class GROUP_TOOLS_MT_active_interface_context_menu(Menu):
         layout = self.layout
         layout.operator("group_edit_tools.active_interface_item_duplicate", icon='DUPLICATE')
         layout.operator("group_edit_tools.active_interface_item_swap_io_type", icon='ARROW_LEFTRIGHT')
+        layout.menu("GROUP_TOOLS_MT_parent_to_panel", icon="DOWNARROW_HLT")
+        return
+    
+
+class GROUP_TOOLS_MT_parent_to_panel(Menu):
+    bl_label = "Parent to Panel"
+
+    @classmethod
+    def poll(self, context):
+        try:
+            return context.group_edit_active_item.item_type == 'SOCKET'
+        except AttributeError:
+            return False
+
+    def draw(self, context):
+        layout = self.layout
+        tree = context.group_edit_tree_to_edit
+        active_item = context.group_edit_active_item
+
+        # TODO: Add support for parenting panels inside of panels in 4.4
+        for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
+            if panel != active_item.parent:
+                if panel.index == -1:
+                    panel_name = "(None)"
+                else:
+                    panel_name = panel.name
+
+                props = layout.operator("group_edit_tools.parent_to_panel", text=panel_name)
+                props.parent_index = panel.index
+        
         return
 
 
@@ -160,6 +190,7 @@ refreshable_classes = (
 classes = (
     *refreshable_classes,
     GROUP_TOOLS_MT_active_interface_context_menu,
+    GROUP_TOOLS_MT_parent_to_panel
 )
 
 
