@@ -365,15 +365,28 @@ class GROUP_TOOLS_OT_parent_to_panel(Operator):
 
     parent_index : IntProperty(name="Parent Index", default=0)
 
-    @classmethod
-    def poll(cls, context):
-        try:
-            tree = context.group_edit_tree_to_edit
-            if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
-                return context.group_edit_active_item.item_type == 'SOCKET'
-            
-        except AttributeError:
-            return False
+
+    if bpy.app.version >= (4, 4, 0):
+        @classmethod
+        def poll(cls, context):
+            try:
+                tree = context.group_edit_tree_to_edit
+                if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+                    return context.group_edit_active_item is not None
+                
+            except AttributeError:
+                return False
+    else:
+        @classmethod
+        def poll(cls, context):
+            try:
+                tree = context.group_edit_tree_to_edit
+                if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+                    return context.group_edit_active_item.item_type == 'SOCKET'
+                
+            except AttributeError:
+                return False
+                
 
     def execute(self, context):
         tree = context.group_edit_tree_to_edit

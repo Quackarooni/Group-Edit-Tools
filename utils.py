@@ -33,6 +33,16 @@ def fetch_tree_of_active_node(context=None):
 
     return tree
 
+if bpy.app.version >= (4, 4, 0):
+    @functools.cache
+    def is_child_of(child, parent):
+        if child.parent is None:
+            return False
+        elif child.parent == parent:
+            return True
+        else:
+            return is_child_of(child.parent, parent)
+        
 
 def fetch_base_panel(group):
     new_socket = group.interface.new_socket(name="DUMMY_SOCKET")
