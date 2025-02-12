@@ -91,69 +91,69 @@ if bpy.app.version >= (4, 4, 0):
     class GROUP_TOOLS_MT_parent_to_panel(Menu):
         bl_label = "Parent to Panel"
 
+        @staticmethod
+        def valid_panels(context):
+            tree = context.group_edit_tree_to_edit
+            active_item = context.group_edit_active_item
+
+            if active_item.item_type == "PANEL": 
+                for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
+                    if panel != active_item.parent:
+                        if panel != active_item and not utils.is_child_of(panel, active_item):
+                            yield panel
+
+            else:
+                for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
+                    if panel != active_item.parent:
+                        yield panel
+
         @classmethod
         def poll(self, context):
-            return context.group_edit_active_item is not None
+            return context.group_edit_active_item is not None and len(tuple(self.valid_panels(context))) > 0
 
         def draw(self, context):
             layout = self.layout
-            tree = context.group_edit_tree_to_edit
-            active_item = context.group_edit_active_item
 
             # Don't let cache persist between menu draws
             utils.is_child_of.cache_clear()
 
             # TODO: Add support for parenting panels inside of panels in 4.4
-            if active_item.item_type == "PANEL": 
-                for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
-                    if panel != active_item.parent:
-                        if panel == active_item or utils.is_child_of(panel, active_item):
-                            continue
-
-                        if panel.index == -1:
-                            panel_name = "(None)"
-                        else:
-                            panel_name = panel.name
-                            
-                        props = layout.operator("group_edit_tools.parent_to_panel", text=panel_name)
-                        props.parent_index = panel.index
-            else:
-                for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
-                    if panel != active_item.parent:
-                        if panel.index == -1:
-                            panel_name = "(None)"
-                        else:
-                            panel_name = panel.name
-
-                        props = layout.operator("group_edit_tools.parent_to_panel", text=panel_name)
-                        props.parent_index = panel.index
+            for panel in self.valid_panels(context):
+                panel_name = panel.name if (panel.index != -1) else "(None)"
+                
+                props = layout.operator("group_edit_tools.parent_to_panel", text=panel_name)
+                props.parent_index = panel.index
+            
             return
 else:
     class GROUP_TOOLS_MT_parent_to_panel(Menu):
         bl_label = "Parent to Panel"
 
+        @staticmethod
+        def valid_panels(context):
+            tree = context.group_edit_tree_to_edit
+            active_item = context.group_edit_active_item
+
+            for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
+                if panel != active_item.parent:
+                    yield panel
+
         @classmethod
         def poll(self, context):
             try:
-                return context.group_edit_active_item.item_type == 'SOCKET'
+                return context.group_edit_active_item.item_type == 'SOCKET' and len(tuple(self.valid_panels(context))) > 0
             except AttributeError:
                 return False
 
         def draw(self, context):
             layout = self.layout
-            tree = context.group_edit_tree_to_edit
-            active_item = context.group_edit_active_item
 
             # TODO: Add support for parenting panels inside of panels in 4.4
-            for panel in utils.fetch_group_items(tree, item_type="PANEL", include_base_panel=True):
-                if panel != active_item.parent:
-                    if panel.index == -1:
-                        panel_name = "(None)"
-                    else:
-                        panel_name = panel.name
-
-                    props = layout.operator("group_edit_tools.parent_to_panel", text=panel_name)
-                    props.parent_index = panel.index
+            for panel in self.valid_panels(context):
+                panel_name = panel.name if (panel.index != -1) else "(None)"
+                
+                props = layout.operator("group_edit_tools.parent_to_panel", text=panel_name)
+                props.parent_index = panel.index
             
             return
 
