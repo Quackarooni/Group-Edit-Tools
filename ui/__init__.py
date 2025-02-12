@@ -117,7 +117,6 @@ if bpy.app.version >= (4, 4, 0):
             # Don't let cache persist between menu draws
             utils.is_child_of.cache_clear()
 
-            # TODO: Add support for parenting panels inside of panels in 4.4
             for panel in self.valid_panels(context):
                 panel_name = panel.name if (panel.index != -1) else "(None)"
                 
@@ -148,7 +147,6 @@ else:
         def draw(self, context):
             layout = self.layout
 
-            # TODO: Add support for parenting panels inside of panels in 4.4
             for panel in self.valid_panels(context):
                 panel_name = panel.name if (panel.index != -1) else "(None)"
                 
