@@ -76,17 +76,15 @@ class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
     )
 
     @classmethod
+    @utils.return_false_when(AttributeError)
     def poll(cls, context):
-        try:
-            tree = context.group_edit_tree_to_edit
+        tree = context.group_edit_tree_to_edit
 
-            return all((
-                tree is not None,
-                not tree.is_embedded_data,
-                tree.interface.active is not None
-            ))
-        except AttributeError:
-            return False
+        return all((
+            tree is not None,
+            not tree.is_embedded_data,
+            tree.interface.active is not None
+        ))
 
     @staticmethod
     def fetch_all_parents(interface):
@@ -173,12 +171,10 @@ class GROUP_TOOLS_OT_active_interface_item_new(Operator):
     )
 
     @classmethod
+    @utils.return_false_when(AttributeError)
     def poll(cls, context):
-        try:
-            tree = context.group_edit_tree_to_edit
-            return not (tree is None or tree.is_embedded_data)
-        except AttributeError:
-            return False
+        tree = context.group_edit_tree_to_edit
+        return not (tree is None or tree.is_embedded_data)
 
     # Returns a valid socket type for the given tree or None.
     @staticmethod
@@ -235,13 +231,11 @@ class GROUP_TOOLS_OT_active_interface_item_duplicate(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
+    @utils.return_false_when(AttributeError)
     def poll(cls, context):
-        try:
-            tree = context.group_edit_tree_to_edit
-            if not (tree is None or tree.is_embedded_data):
-                return (tree.interface.active is not None)
-        except AttributeError:
-            return False
+        tree = context.group_edit_tree_to_edit
+        if not (tree is None or tree.is_embedded_data):
+            return (tree.interface.active is not None)
 
     def execute(self, context):
         tree = context.group_edit_tree_to_edit
@@ -293,17 +287,15 @@ class GROUP_TOOLS_OT_active_interface_item_swap_io_type(Operator):
         return base_pos + offset
 
     @classmethod
+    @utils.return_false_when(AttributeError)
     def poll(cls, context):
-        try:
-            tree = context.group_edit_tree_to_edit
-            if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
-                active_item = tree.interface.active
-                return active_item.item_type == "SOCKET" and active_item.socket_type != "NodeSocketMenu"
-                    
-        except AttributeError:
-            return False
+        tree = context.group_edit_tree_to_edit
+        if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+            active_item = tree.interface.active
+            return active_item.item_type == "SOCKET" and active_item.socket_type != "NodeSocketMenu"
 
     def execute(self, context):
+        print(self.poll(context))
         tree = context.group_edit_tree_to_edit
         interface = tree.interface
 
@@ -335,13 +327,11 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
+    @utils.return_false_when(AttributeError)
     def poll(cls, context):
-        try:
-            tree = context.group_edit_tree_to_edit
-            if not (tree is None or tree.is_embedded_data):
-                return (tree.interface.active is not None)
-        except AttributeError:
-            return False
+        tree = context.group_edit_tree_to_edit
+        if not (tree is None or tree.is_embedded_data):
+            return (tree.interface.active is not None)
 
     def execute(self, context):
         tree = context.group_edit_tree_to_edit
@@ -368,25 +358,18 @@ class GROUP_TOOLS_OT_parent_to_panel(Operator):
 
     if bpy.app.version >= (4, 4, 0):
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(cls, context):
-            try:
-                tree = context.group_edit_tree_to_edit
-                if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
-                    return context.group_edit_active_item is not None
-                
-            except AttributeError:
-                return False
+            tree = context.group_edit_tree_to_edit
+            if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+                return context.group_edit_active_item is not None
     else:
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(cls, context):
-            try:
-                tree = context.group_edit_tree_to_edit
-                if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
-                    return context.group_edit_active_item.item_type == 'SOCKET'
-                
-            except AttributeError:
-                return False
-                
+            tree = context.group_edit_tree_to_edit
+            if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
+                return context.group_edit_active_item.item_type == 'SOCKET'
 
     def execute(self, context):
         tree = context.group_edit_tree_to_edit
@@ -415,12 +398,10 @@ if bpy.app.version >= (4, 3, 0):
         bl_options = {'REGISTER', 'UNDO'}
 
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(cls, context):
-            try:
-                selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
-                return len(selected_nodegroups)
-            except AttributeError:
-                return False
+            selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
+            return len(selected_nodegroups)
 
         def execute(self, context):
             selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
@@ -450,12 +431,10 @@ if bpy.app.version >= (4, 3, 0):
         bl_options = {'REGISTER', 'UNDO'}
 
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(cls, context):
-            try:
-                selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
-                return len(selected_nodegroups)
-            except AttributeError:
-                return False
+            selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))
+            return len(selected_nodegroups)
 
         def execute(self, context):
             selected_nodegroups = tuple(n for n in context.selected_nodes if hasattr(n, "node_tree"))

@@ -138,11 +138,9 @@ else:
                     yield panel
 
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(self, context):
-            try:
-                return context.group_edit_active_item.item_type == 'SOCKET' and len(tuple(self.valid_panels(context))) > 0
-            except AttributeError:
-                return False
+            return context.group_edit_active_item.item_type == 'SOCKET' and len(tuple(self.valid_panels(context))) > 0
 
         def draw(self, context):
             layout = self.layout

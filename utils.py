@@ -67,41 +67,48 @@ def is_group_valid(tree, context):
     return not (tree is None or tree.is_embedded_data)
 
 
+# Decorator for allowing poll functions to safely return False
+# should they encounter a specific kind of Exception
+def return_false_when(*args, **_):
+    exceptions = *args,
+
+    def decorator(poll):
+        @functools.wraps(poll)
+        def wrapper(self, context):
+            try:
+                return poll(self, context)
+            except exceptions:
+                return False
+            
+        return wrapper
+    return decorator
+
+
+@return_false_when(AttributeError)
 def active_group_poll(cls, context):
-    try:
-        if not context.active_node.select:
-            return False
-
-        tree = fetch_tree_of_active_node(context)
-        return is_group_valid(tree, context)
-
-    except AttributeError:
+    if not context.active_node.select:
         return False
 
+    tree = fetch_tree_of_active_node(context)
+    return is_group_valid(tree, context)
 
+
+@return_false_when(AttributeError)
 def group_poll(cls, context):
-    try:
-        tree = context.space_data.edit_tree
-        return is_group_valid(tree, context)
-    except AttributeError:
-        return False
+    tree = context.space_data.edit_tree
+    return is_group_valid(tree, context)
 
 
+@return_false_when(AttributeError)
 def active_group_old_props_poll(cls, context):
-    try:
-        if not context.active_node.select:
-            return False
-
-        tree = fetch_tree_of_active_node(context)
-        return (tree.bl_idname == "GeometryNodeTree") and is_group_valid(tree, context)
-
-    except AttributeError:
+    if not context.active_node.select:
         return False
 
+    tree = fetch_tree_of_active_node(context)
+    return (tree.bl_idname == "GeometryNodeTree") and is_group_valid(tree, context)
 
+
+@return_false_when(AttributeError)
 def group_old_props_poll(cls, context):
-    try:
-        tree = context.space_data.edit_tree
-        return (tree.bl_idname == "GeometryNodeTree") and is_group_valid(tree, context)
-    except AttributeError:
-        return False
+    tree = context.space_data.edit_tree
+    return (tree.bl_idname == "GeometryNodeTree") and is_group_valid(tree, context)
