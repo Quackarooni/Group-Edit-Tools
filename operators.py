@@ -298,7 +298,7 @@ class GROUP_TOOLS_OT_active_interface_item_swap_io_type(Operator):
             tree = context.group_edit_tree_to_edit
             if not (tree is None or tree.is_embedded_data) and (tree.interface.active is not None):
                 active_item = tree.interface.active
-                return active_item.item_type == "SOCKET"
+                return active_item.item_type == "SOCKET" and active_item.socket_type != "NodeSocketMenu"
                     
         except AttributeError:
             return False
