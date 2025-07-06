@@ -456,7 +456,51 @@ if bpy.app.version >= (4, 3, 0):
             return {'FINISHED'}
 
 
-if bpy.app.version >= (4, 3, 0):
+if bpy.app.version >= (4, 5, 0):
+    class GROUP_TOOLS_OT_active_interface_item_new_panel_toggle(Operator):
+        '''Add a new panel toggle to the currently selected panel'''
+        bl_idname = "group_edit_tools.interface_item_new_panel_toggle"
+        bl_label = "Add Panel Toggle"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        @utils.return_false_when(AttributeError)
+        def poll(cls, context):
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+
+            # Remember active item and position to determine target position.
+            active_item = interface.active
+            active_panel = active_item
+
+            if len(active_panel.interface_items) > 0:
+                first_item = active_panel.interface_items[0]
+                if type(first_item) is bpy.types.NodeTreeInterfaceSocketBool and first_item.is_panel_toggle:
+                    cls.poll_message_set("Panel already has a toggle")
+                    return False
+                else:
+                    return True
+            else:
+                return True
+
+        def execute(self, context):
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            active_panel = interface.active
+
+            item = interface.new_socket(active_panel.name, socket_type='NodeSocketBool', in_out='INPUT')
+            item.is_panel_toggle = True
+            interface.move_to_parent(item, active_panel, 0)
+            return {'FINISHED'}
+
+
+if bpy.app.version >= (4, 5, 0):
+    version_specific_classes = (
+        GROUP_TOOLS_OT_active_interface_item_new_panel_toggle,
+        GROUP_TOOLS_OT_selected_group_default_width_set,
+        GROUP_TOOLS_OT_selected_group_reset_to_default_width,
+    )
+elif bpy.app.version >= (4, 3, 0):
     version_specific_classes = (
         GROUP_TOOLS_OT_selected_group_default_width_set,
         GROUP_TOOLS_OT_selected_group_reset_to_default_width,

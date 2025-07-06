@@ -100,6 +100,7 @@ if bpy.app.version >= (4, 5, 0):
 
             if active_item.item_type == 'PANEL':
                 layout.separator(type='LINE')
+                layout.operator("group_edit_tools.interface_item_new_panel_toggle", text='Toggle', icon='NODE_SOCKET_BOOLEAN')
 
         
     version_specific_classes = (
