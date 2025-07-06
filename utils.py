@@ -44,6 +44,29 @@ if bpy.app.version >= (4, 4, 0):
             return is_child_of(child.parent, parent)
         
 
+def compare_attributes(item, *_, **keywords):
+    for key, value in keywords.items():
+        if getattr(item, key, None) != value:
+            return False
+        
+    return True
+
+
+def is_panel_toggle(item):
+    return compare_attributes(item, in_out="INPUT", is_panel_toggle=True, socket_type="NodeSocketBool")
+
+
+def get_panel_toggle(panel):
+    try:
+        first_item = panel.interface_items[0]
+        if is_panel_toggle(first_item):
+            return first_item
+        else:
+            return None
+    except (AttributeError, IndexError):
+        return None
+
+
 def fetch_base_panel(group):
     new_socket = group.interface.new_socket(name="DUMMY_SOCKET")
     panel =  new_socket.parent
