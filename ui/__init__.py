@@ -2,7 +2,7 @@ import bpy
 from bpy.types import Menu, Panel
 
 from bl_ui import space_node
-from bl_ui.space_node import NODE_PT_node_tree_interface, NODE_PT_node_tree_properties
+from bl_ui.space_node import NODE_PT_node_tree_interface, NODE_PT_node_tree_properties, NODE_PT_node_tree_interface_panel_toggle
 
 from . import draw
 from .. import utils
@@ -50,8 +50,42 @@ class GROUP_TOOLS_PT_active_group_properties(RefreshableBaseClass, Panel):
         draw.active_group_properties(group, self.layout, context)
         return
 
+if bpy.app.version >= (4, 5, 0):
+    class GROUP_TOOLS_PT_active_group_panel_toggle(RefreshableBaseClass, Panel):
+        bl_label = "Panel Toggle"
+        bl_space_type = 'NODE_EDITOR'
+        bl_region_type = 'UI'
+        bl_order = 2
 
-if bpy.app.version >= (4, 1, 0):
+        @classmethod
+        @utils.return_false_when(AttributeError, IndexError)
+        def poll(self, context):
+            tree = utils.fetch_tree_of_active_node(context)
+            active_item = tree.interface.active
+            first_item = active_item.interface_items[0]
+            return getattr(first_item, "is_panel_toggle", False)
+        
+        def draw(self, context):
+            layout = self.layout
+            tree = utils.fetch_tree_of_active_node(context)
+            active_item = tree.interface.active
+            panel_toggle_item = active_item.interface_items[0]
+
+            layout.use_property_split = True
+            layout.use_property_decorate = False
+
+            layout.prop(panel_toggle_item, "default_value", text="Default")
+
+            col = layout.column()
+            col.prop(panel_toggle_item, "hide_in_modifier")
+            col.prop(panel_toggle_item, "force_non_field")
+            return
+
+    version_specific_classes = (
+        GROUP_TOOLS_PT_active_group_panel_toggle,
+    )
+
+elif bpy.app.version >= (4, 1, 0):
     version_specific_classes = []
 else:
     class GROUP_TOOLS_PT_active_group_copy_attributes(RefreshableBaseClass, Panel):
@@ -200,6 +234,38 @@ class NODE_PT_modified_node_tree_properties(Panel):
         tree = context.space_data.edit_tree
         draw.group_properties(tree, self.layout, context)
         return
+    
+
+class NODE_PT_modified_node_tree_interface_panel_toggle(Panel):
+    bl_idname = "NODE_PT_node_tree_interface_panel_toggle"
+    bl_label = NODE_PT_node_tree_interface_panel_toggle.bl_label
+    bl_space_type = 'NODE_EDITOR'
+    bl_region_type = "UI"
+    bl_category = "Group"
+
+    @classmethod
+    @utils.return_false_when(AttributeError, IndexError)
+    def poll(self, context):
+        tree = context.space_data.edit_tree
+        active_item = tree.interface.active
+        first_item = active_item.interface_items[0]
+        return getattr(first_item, "is_panel_toggle", False)
+    
+    def draw(self, context):
+        layout = self.layout
+        tree = context.space_data.edit_tree
+        active_item = tree.interface.active
+        panel_toggle_item = active_item.interface_items[0]
+
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.prop(panel_toggle_item, "default_value", text="Default")
+
+        col = layout.column()
+        col.prop(panel_toggle_item, "hide_in_modifier")
+        col.prop(panel_toggle_item, "force_non_field")
+        return
 
 
 def should_display_warning():
@@ -229,10 +295,17 @@ def unregister_overriding_classes():
         bpy.utils.register_class(original_class)
 
 
-overriding_classes = (
-    NODE_PT_modified_node_tree_interface,
-    NODE_PT_modified_node_tree_properties,
-)
+if bpy.app.version >= (4, 5, 0):
+    overriding_classes = (
+        NODE_PT_modified_node_tree_interface,
+        NODE_PT_modified_node_tree_properties,
+        NODE_PT_modified_node_tree_interface_panel_toggle,
+    )
+else:
+    overriding_classes = (
+        NODE_PT_modified_node_tree_interface,
+        NODE_PT_modified_node_tree_properties,
+    )
 
 refreshable_classes = (
     GROUP_TOOLS_PT_PANEL,
