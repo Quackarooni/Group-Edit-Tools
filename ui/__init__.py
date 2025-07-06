@@ -2,7 +2,10 @@ import bpy
 from bpy.types import Menu, Panel
 
 from bl_ui import space_node
-from bl_ui.space_node import NODE_PT_node_tree_interface, NODE_PT_node_tree_properties, NODE_PT_node_tree_interface_panel_toggle
+from bl_ui.space_node import NODE_PT_node_tree_interface, NODE_PT_node_tree_properties
+
+if bpy.app.version >= (4, 5, 0):
+    from bl_ui.space_node import NODE_PT_node_tree_interface_panel_toggle
 
 from . import draw
 from .. import utils
@@ -238,7 +241,7 @@ class NODE_PT_modified_node_tree_properties(Panel):
 
 class NODE_PT_modified_node_tree_interface_panel_toggle(Panel):
     bl_idname = "NODE_PT_node_tree_interface_panel_toggle"
-    bl_label = NODE_PT_node_tree_interface_panel_toggle.bl_label
+    bl_label = "Panel Toggle"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = "UI"
     bl_category = "Group"
