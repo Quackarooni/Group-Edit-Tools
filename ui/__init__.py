@@ -58,7 +58,7 @@ if bpy.app.version >= (4, 5, 0):
         bl_label = "Panel Toggle"
         bl_space_type = 'NODE_EDITOR'
         bl_region_type = 'UI'
-        bl_order = 2
+        bl_parent_id = "GROUP_TOOLS_PT_PANEL"
 
         @classmethod
         @utils.return_false_when(AttributeError, IndexError)
@@ -244,6 +244,7 @@ class NODE_PT_modified_node_tree_interface_panel_toggle(Panel):
     bl_label = "Panel Toggle"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = "UI"
+    bl_parent_id = "NODE_PT_node_tree_interface"
     bl_category = "Group"
 
     @classmethod
