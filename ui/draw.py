@@ -13,6 +13,8 @@ field_socket_types = {
 
 def side_buttons(tree, layout):
     col = layout.column(align=True)
+    col.enabled = tree.library is None
+
     col.context_pointer_set("group_edit_tree_to_edit", tree)
     col.context_pointer_set("group_edit_active_item", tree.interface.active)
 
@@ -32,6 +34,7 @@ def group_sockets(tree, layout, context):
     layout.use_property_decorate = False
 
     row = layout.row()
+    row.enabled = tree.library is None
     row.template_node_tree_interface(tree.interface)
 
     side_buttons(tree, layout=row)
