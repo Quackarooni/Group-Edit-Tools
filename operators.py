@@ -469,19 +469,17 @@ if bpy.app.version >= (4, 5, 0):
             tree = context.group_edit_tree_to_edit
             interface = tree.interface
 
-            # Remember active item and position to determine target position.
             active_item = interface.active
-            active_panel = active_item
 
-            if len(active_panel.interface_items) > 0:
-                first_item = active_panel.interface_items[0]
-                if type(first_item) is bpy.types.NodeTreeInterfaceSocketBool and first_item.is_panel_toggle:
-                    cls.poll_message_set("Panel already has a toggle")
-                    return False
-                else:
-                    return True
-            else:
-                return True
+            if active_item.item_type != 'PANEL':
+                cls.poll_message_set("Active item is not a panel")
+                return False
+            
+            if utils.get_panel_toggle(active_item) is not None:
+                cls.poll_message_set("Panel already has a toggle")
+                return False
+            
+            return True
 
         def execute(self, context):
             tree = context.group_edit_tree_to_edit
