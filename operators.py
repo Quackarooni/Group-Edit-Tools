@@ -557,42 +557,32 @@ if bpy.app.version >= (4, 5, 0):
         bl_options = {'REGISTER', 'UNDO'}
 
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(cls, context):
-            if not super().poll(context):
-                return False
-
             tree = context.group_edit_tree_to_edit
-            interface = tree.interface
-            active_item = interface.active
-            if not active_item or active_item.item_type != 'PANEL':
-                return False
-            if len(active_item.interface_items) == 0:
+            active_item = tree.interface.active
+
+            if not hasattr(active_item, "interface_items"):
+                cls.poll_message_set("Active item is not a panel")
                 return False
 
-            first_item = active_item.interface_items[0]
-            return getattr(first_item, "is_panel_toggle", False)
+            if utils.get_panel_toggle(active_item) is None:
+                cls.poll_message_set("Panel does not have a toggle")
+                return False
+            
+            return True
 
         def execute(self, context):
             tree = context.group_edit_tree_to_edit
             interface = tree.interface
             active_item = interface.active
 
-            if not active_item or active_item.item_type != 'PANEL':
-                return {'CANCELLED'}
-
-            if len(active_item.interface_items) == 0:
-                return {'CANCELLED'}
-
-            first_item = active_item.interface_items[0]
-            if type(first_item) is not bpy.types.NodeTreeInterfaceSocketBool or not first_item.is_panel_toggle:
-                return {'CANCELLED'}
-
-            first_item.is_panel_toggle = False
-            first_item.name = active_item.name
+            panel_toggle = utils.get_panel_toggle(active_item)
+            panel_toggle.is_panel_toggle = False
+            panel_toggle.name = active_item.name
 
             # Make the socket active.
-            interface.active = first_item
-
+            interface.active = panel_toggle
             return {'FINISHED'}
 
 
