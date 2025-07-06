@@ -79,12 +79,28 @@ else:
 class GROUP_TOOLS_MT_active_interface_context_menu(Menu):
     bl_label = "Node Tree Interface Specials"
 
-    def draw(self, _context):
-        layout = self.layout
-        layout.operator("group_edit_tools.active_interface_item_duplicate", icon='DUPLICATE')
-        layout.operator("group_edit_tools.active_interface_item_swap_io_type", icon='ARROW_LEFTRIGHT')
-        layout.menu("GROUP_TOOLS_MT_parent_to_panel", icon="DOWNARROW_HLT")
-        return
+    if bpy.app.version >= (4, 5, 0):
+        def draw(self, context):
+            layout = self.layout
+            
+            group = context.group_edit_tree_to_edit
+            active_item = group.interface.active
+
+            layout.operator("group_edit_tools.active_interface_item_duplicate", icon='DUPLICATE')
+            layout.operator("group_edit_tools.active_interface_item_swap_io_type", icon='ARROW_LEFTRIGHT')
+            layout.separator()
+            if active_item.item_type == 'SOCKET':
+                layout.operator("node.interface_item_make_panel_toggle")
+            elif active_item.item_type == 'PANEL':
+                layout.operator("node.interface_item_unlink_panel_toggle")
+
+    else:
+        def draw(self, _context):
+            layout = self.layout
+            layout.operator("group_edit_tools.active_interface_item_duplicate", icon='DUPLICATE')
+            layout.operator("group_edit_tools.active_interface_item_swap_io_type", icon='ARROW_LEFTRIGHT')
+            layout.menu("GROUP_TOOLS_MT_parent_to_panel", icon="DOWNARROW_HLT")
+            return
     
 
 if bpy.app.version >= (4, 4, 0):
