@@ -529,7 +529,6 @@ if bpy.app.version >= (4, 5, 0):
             panel = active_item.parent
 
             active_item.is_panel_toggle = True
-            # Use the same name as the panel in the UI for clarity.
             active_item.name = panel.name
 
             interface.move_to_parent(active_item, panel, 0)
@@ -568,7 +567,6 @@ if bpy.app.version >= (4, 5, 0):
             panel_toggle.is_panel_toggle = False
             panel_toggle.name = active_item.name
 
-            # Make the socket active.
             interface.active = panel_toggle
             return {'FINISHED'}
 
