@@ -52,8 +52,12 @@ def compare_attributes(item, *_, **keywords):
     return True
 
 
+def is_boolean_input(item):
+    return compare_attributes(item, in_out="INPUT", socket_type="NodeSocketBool")
+
+
 def is_panel_toggle(item):
-    return compare_attributes(item, in_out="INPUT", is_panel_toggle=True, socket_type="NodeSocketBool")
+    return compare_attributes(item, in_out="INPUT", socket_type="NodeSocketBool", is_panel_toggle=True, )
 
 
 def get_panel_toggle(panel):
