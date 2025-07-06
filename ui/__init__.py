@@ -76,7 +76,7 @@ if bpy.app.version >= (4, 5, 0):
 
             layout.prop(panel_toggle_item, "default_value", text="Default")
 
-            col = layout.column()
+            col = layout.column(align=True)
             col.prop(panel_toggle_item, "hide_in_modifier")
             col.prop(panel_toggle_item, "force_non_field")
             return
@@ -262,7 +262,7 @@ class NODE_PT_modified_node_tree_interface_panel_toggle(Panel):
 
         layout.prop(panel_toggle_item, "default_value", text="Default")
 
-        col = layout.column()
+        col = layout.column(align=True)
         col.prop(panel_toggle_item, "hide_in_modifier")
         col.prop(panel_toggle_item, "force_non_field")
         return
