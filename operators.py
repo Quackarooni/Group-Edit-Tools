@@ -504,7 +504,7 @@ if bpy.app.version >= (4, 5, 0):
             active_item = tree.interface.active
 
             if not utils.is_boolean_input(active_item):
-                cls.poll_message_set("Only boolean input sockets are supported")
+                cls.poll_message_set("Active item is not a boolean input socket")
                 return False
 
             panel = active_item.parent
