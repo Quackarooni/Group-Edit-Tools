@@ -83,7 +83,25 @@ if bpy.app.version >= (4, 5, 0):
             col.prop(panel_toggle_item, "hide_in_modifier")
             col.prop(panel_toggle_item, "force_non_field")
             return
+        
+    class GROUP_TOOLS_MT_interface_item_new(Menu):
+        bl_label = "New Item"
+        bl_description = "Add a new item to the interface"
 
+        def draw(self, context):
+            layout = self.layout
+            
+            group = context.group_edit_tree_to_edit
+            active_item = group.interface.active
+
+            layout.operator("group_edit_tools.interface_item_new", text='Input').item_type='INPUT'
+            layout.operator("group_edit_tools.interface_item_new", text='Output').item_type='OUTPUT'
+            layout.operator("group_edit_tools.interface_item_new", text='Panel').item_type='PANEL'
+
+            if active_item.item_type == 'PANEL':
+                layout.separator(type='LINE')
+
+        
     version_specific_classes = (
         GROUP_TOOLS_PT_active_group_panel_toggle,
     )
@@ -317,11 +335,19 @@ refreshable_classes = (
     *version_specific_classes
 )
 
-classes = (
-    *refreshable_classes,
-    GROUP_TOOLS_MT_active_interface_context_menu,
-    GROUP_TOOLS_MT_parent_to_panel
-)
+if bpy.app.version >= (4, 5, 0):
+    classes = (
+        *refreshable_classes,
+        GROUP_TOOLS_MT_interface_item_new,
+        GROUP_TOOLS_MT_active_interface_context_menu,
+        GROUP_TOOLS_MT_parent_to_panel,
+    )
+else:
+    classes = (
+        *refreshable_classes,
+        GROUP_TOOLS_MT_active_interface_context_menu,
+        GROUP_TOOLS_MT_parent_to_panel,
+    )
 
 
 def register():

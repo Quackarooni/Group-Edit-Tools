@@ -11,6 +11,15 @@ field_socket_types = {
     "NodeSocketFloat",
 }
 
+
+if bpy.app.version >= (4, 5, 0):
+    def add_item(layout):
+        layout.menu("GROUP_TOOLS_MT_interface_item_new", icon='ADD', text="")
+else:
+    def add_item(layout):
+        layout.operator_menu_enum("group_edit_tools.interface_item_new", "item_type", icon='ADD', text="")
+
+
 def side_buttons(tree, layout):
     col = layout.column(align=True)
     col.enabled = tree.library is None
@@ -18,7 +27,7 @@ def side_buttons(tree, layout):
     col.context_pointer_set("group_edit_tree_to_edit", tree)
     col.context_pointer_set("group_edit_active_item", tree.interface.active)
 
-    col.operator_menu_enum("group_edit_tools.interface_item_new", "item_type", icon='ADD', text="")
+    add_item(col)
     col.operator("group_edit_tools.interface_item_remove", icon='REMOVE', text="")
     col.separator()
     col.menu("GROUP_TOOLS_MT_active_interface_context_menu", icon='DOWNARROW_HLT', text="")
