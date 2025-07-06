@@ -494,11 +494,115 @@ if bpy.app.version >= (4, 5, 0):
             return {'FINISHED'}
 
 
+    class GROUP_TOOLS_OT_interface_item_make_panel_toggle(NodeInterfaceOperator, Operator):
+        """Make the active boolean socket a toggle for its parent panel"""
+        bl_idname = "group_edit_tools.interface_item_make_panel_toggle"
+        bl_label = "Make Panel Toggle"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            if not super().poll(context):
+                return False
+
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            active_item = interface.active
+            if not active_item:
+                return False
+
+            if type(active_item) is not bpy.types.NodeTreeInterfaceSocketBool or active_item.in_out != 'INPUT':
+                cls.poll_message_set("Only boolean input sockets are supported")
+                return False
+
+            parent_panel = active_item.parent
+            if parent_panel.parent is None:
+                cls.poll_message_set("Socket must be in a panel")
+                return False
+            if len(parent_panel.interface_items) > 0:
+                first_item = parent_panel.interface_items[0]
+                if first_item.is_panel_toggle:
+                    cls.poll_message_set("Panel already has a toggle")
+                    return False
+            return True
+
+        def execute(self, context):
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            active_item = interface.active
+
+            parent_panel = active_item.parent
+            if not parent_panel:
+                return {'CANCELLED'}
+
+            if type(active_item) is not bpy.types.NodeTreeInterfaceSocketBool:
+                return {'CANCELLED'}
+
+            active_item.is_panel_toggle = True
+            # Use the same name as the panel in the UI for clarity.
+            active_item.name = parent_panel.name
+
+            # Move the socket to the first position.
+            interface.move_to_parent(active_item, parent_panel, 0)
+            # Make the panel active.
+            interface.active = parent_panel
+
+            return {'FINISHED'}
+
+
+    class GROUP_TOOLS_OT_interface_unlink_panel_toggle(NodeInterfaceOperator, Operator):
+        """Make the panel toggle a stand-alone socket"""
+        bl_idname = "group_edit_tools.interface_item_unlink_panel_toggle"
+        bl_label = "Unlink Panel Toggle"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        @classmethod
+        def poll(cls, context):
+            if not super().poll(context):
+                return False
+
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            active_item = interface.active
+            if not active_item or active_item.item_type != 'PANEL':
+                return False
+            if len(active_item.interface_items) == 0:
+                return False
+
+            first_item = active_item.interface_items[0]
+            return getattr(first_item, "is_panel_toggle", False)
+
+        def execute(self, context):
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            active_item = interface.active
+
+            if not active_item or active_item.item_type != 'PANEL':
+                return {'CANCELLED'}
+
+            if len(active_item.interface_items) == 0:
+                return {'CANCELLED'}
+
+            first_item = active_item.interface_items[0]
+            if type(first_item) is not bpy.types.NodeTreeInterfaceSocketBool or not first_item.is_panel_toggle:
+                return {'CANCELLED'}
+
+            first_item.is_panel_toggle = False
+            first_item.name = active_item.name
+
+            # Make the socket active.
+            interface.active = first_item
+
+            return {'FINISHED'}
+
+
 if bpy.app.version >= (4, 5, 0):
     version_specific_classes = (
         GROUP_TOOLS_OT_active_interface_item_new_panel_toggle,
         GROUP_TOOLS_OT_selected_group_default_width_set,
         GROUP_TOOLS_OT_selected_group_reset_to_default_width,
+        GROUP_TOOLS_OT_interface_item_make_panel_toggle,
+        GROUP_TOOLS_OT_interface_unlink_panel_toggle,
     )
 elif bpy.app.version >= (4, 3, 0):
     version_specific_classes = (
