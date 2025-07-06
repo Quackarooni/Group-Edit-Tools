@@ -549,7 +549,7 @@ if bpy.app.version >= (4, 5, 0):
             tree = context.group_edit_tree_to_edit
             active_item = tree.interface.active
 
-            if not hasattr(active_item, "interface_items"):
+            if active_item.item_type != 'PANEL':
                 cls.poll_message_set("Active item is not a panel")
                 return False
 
