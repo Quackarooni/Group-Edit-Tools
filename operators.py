@@ -125,32 +125,63 @@ class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
         
         return next_parent
 
-    def execute(self, context):
-        interface = context.group_edit_tree_to_edit.interface
-        active_item = interface.active
+    if bpy.app.version >= (4, 5, 0):
+        def execute(self, context):
+            interface = context.group_edit_tree_to_edit.interface
+            active_item = interface.active
 
-        offset = -1 if self.direction == 'UP' else 2
+            offset = -1 if self.direction == 'UP' else 2
 
-        old_position = active_item.position
-        interface.move(active_item, active_item.position + offset)
+            old_position = active_item.position
+            
+            adjacent_item = interface.items_tree[active_item.index + offset]
+            is_next_to_toggle = utils.is_panel_toggle(adjacent_item)
+            interface.move(active_item, active_item.position + offset)
 
-        if old_position == active_item.position and active_item.item_type == 'SOCKET':
-            parents = tuple(self.fetch_all_parents(interface))
+            if is_next_to_toggle or (old_position == active_item.position and active_item.item_type == 'SOCKET'):
+                parents = tuple(self.fetch_all_parents(interface))
 
-            if self.direction == 'UP':
-                new_parent = self.get_prev_parent(parents, active_item.parent)
-                new_position = len(new_parent.interface_items)
-            else:
-                new_parent = self.get_next_parent(parents, active_item.parent)
-                new_position = 0
+                if self.direction == 'UP':
+                    new_parent = self.get_prev_parent(parents, active_item.parent)
+                    new_position = len(new_parent.interface_items)
+                else:
+                    new_parent = self.get_next_parent(parents, active_item.parent)
+                    new_position = 0 + bool(utils.get_panel_toggle(new_parent))
 
-            if new_parent != active_item.parent:
-                interface.move_to_parent(active_item, new_parent, new_position)
-            else:
-                return {'CANCELLED'}
+                if new_parent != active_item.parent:
+                    interface.move_to_parent(active_item, new_parent, new_position)
+                else:
+                    return {'CANCELLED'}
 
-        interface.active_index = active_item.index
-        return {'FINISHED'}
+            interface.active_index = active_item.index
+            return {'FINISHED'}
+    else:
+        def execute(self, context):
+            interface = context.group_edit_tree_to_edit.interface
+            active_item = interface.active
+
+            offset = -1 if self.direction == 'UP' else 2
+
+            old_position = active_item.position
+            interface.move(active_item, active_item.position + offset)
+
+            if old_position == active_item.position and active_item.item_type == 'SOCKET':
+                parents = tuple(self.fetch_all_parents(interface))
+
+                if self.direction == 'UP':
+                    new_parent = self.get_prev_parent(parents, active_item.parent)
+                    new_position = len(new_parent.interface_items)
+                else:
+                    new_parent = self.get_next_parent(parents, active_item.parent)
+                    new_position = 0
+
+                if new_parent != active_item.parent:
+                    interface.move_to_parent(active_item, new_parent, new_position)
+                else:
+                    return {'CANCELLED'}
+
+            interface.active_index = active_item.index
+            return {'FINISHED'}
 
 
 class GROUP_TOOLS_OT_active_interface_item_new(Operator):
