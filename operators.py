@@ -295,7 +295,6 @@ class GROUP_TOOLS_OT_active_interface_item_swap_io_type(Operator):
             return active_item.item_type == "SOCKET" and active_item.socket_type != "NodeSocketMenu"
 
     def execute(self, context):
-        print(self.poll(context))
         tree = context.group_edit_tree_to_edit
         interface = tree.interface
 
@@ -338,7 +337,7 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
             tree = context.group_edit_tree_to_edit
             interface = tree.interface
             item = interface.active
-            
+
             if item is None:
                 return {'CANCELLED'}
 
