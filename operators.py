@@ -521,6 +521,7 @@ if bpy.app.version >= (4, 5, 0):
         bl_options = {'REGISTER', 'UNDO'}
 
         @classmethod
+        @utils.return_false_when(AttributeError)
         def poll(cls, context):
             tree = context.group_edit_tree_to_edit
             active_item = tree.interface.active
