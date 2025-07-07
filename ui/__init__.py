@@ -144,6 +144,7 @@ class GROUP_TOOLS_MT_active_interface_context_menu(Menu):
 
             layout.operator("group_edit_tools.active_interface_item_duplicate", icon='DUPLICATE')
             layout.operator("group_edit_tools.active_interface_item_swap_io_type", icon='ARROW_LEFTRIGHT')
+            layout.menu("GROUP_TOOLS_MT_parent_to_panel", icon="DOWNARROW_HLT")
             layout.separator()
             if active_item.item_type == 'SOCKET':
                 layout.operator("group_edit_tools.interface_item_make_panel_toggle", icon="NODE_SOCKET_BOOLEAN")
