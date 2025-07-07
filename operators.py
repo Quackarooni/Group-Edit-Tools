@@ -333,18 +333,41 @@ class GROUP_TOOLS_OT_active_interface_item_remove(Operator):
         if not (tree is None or tree.is_embedded_data):
             return (tree.interface.active is not None)
 
-    def execute(self, context):
-        tree = context.group_edit_tree_to_edit
-        interface = tree.interface
-        item = interface.active
+    if bpy.app.version >= (4, 5, 0):
+        def execute(self, context):
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            item = interface.active
+            
+            if item is None:
+                return {'CANCELLED'}
 
-        if item is None:
-            return {'CANCELLED'}
+            panel_toggle = utils.get_panel_toggle(item)
+            if panel_toggle is not None:
+                interface.remove(panel_toggle)
 
-        interface.remove(item)
-        interface.active_index = min(interface.active_index, len(interface.items_tree) - 1)
+            interface.remove(item)
+            interface.active_index = min(interface.active_index, len(interface.items_tree) - 1)
+            
+            # If what's about to be the active item is a toggle, 
+            # move the index back one step to select the parent panel
+            if utils.is_panel_toggle(interface.active):
+                interface.active_index = min(interface.active_index - 1, len(interface.items_tree) - 1)
 
-        return {'FINISHED'}
+            return {'FINISHED'}
+    else:
+        def execute(self, context):
+            tree = context.group_edit_tree_to_edit
+            interface = tree.interface
+            item = interface.active
+
+            if item is None:
+                return {'CANCELLED'}
+
+            interface.remove(item)
+            interface.active_index = min(interface.active_index, len(interface.items_tree) - 1)
+
+            return {'FINISHED'}
     
     
 class GROUP_TOOLS_OT_parent_to_panel(Operator):
