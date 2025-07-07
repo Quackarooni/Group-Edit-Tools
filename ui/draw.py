@@ -22,7 +22,7 @@ else:
 
 def side_buttons(tree, layout):
     col = layout.column(align=True)
-    col.enabled = tree.library is None
+    col.enabled = utils.is_tree_editable(tree)
 
     col.context_pointer_set("group_edit_tree_to_edit", tree)
     col.context_pointer_set("group_edit_active_item", tree.interface.active)
@@ -43,7 +43,7 @@ def group_sockets(tree, layout, context):
     layout.use_property_decorate = False
 
     row = layout.row()
-    row.enabled = tree.library is None
+    row.enabled = utils.is_tree_editable(tree)
     row.template_node_tree_interface(tree.interface)
 
     side_buttons(tree, layout=row)

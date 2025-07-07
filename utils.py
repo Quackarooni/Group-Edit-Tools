@@ -94,6 +94,14 @@ def is_group_valid(tree, context):
     return not (tree is None or tree.is_embedded_data)
 
 
+if bpy.app.version >= (4, 5, 0):
+    def is_tree_editable(tree):
+        return tree.is_editable
+else:
+    def is_tree_editable(tree):
+        return tree.library is None
+
+
 # Decorator for allowing poll functions to safely return False
 # should they encounter a specific kind of Exception
 def return_false_when(*args, **_):
