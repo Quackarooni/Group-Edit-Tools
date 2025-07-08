@@ -134,7 +134,11 @@ class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
 
             old_position = active_item.position
             
-            adjacent_item = interface.items_tree[active_item.index + offset]
+            try:
+                adjacent_item = interface.items_tree[active_item.index + offset]
+            except IndexError:
+                adjacent_item = None
+    
             is_next_to_toggle = utils.is_panel_toggle(adjacent_item)
             interface.move(active_item, active_item.position + offset)
 
