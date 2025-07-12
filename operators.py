@@ -1,9 +1,11 @@
+
 import bpy
 from bpy.types import Operator
 from bpy.props import EnumProperty, IntProperty
 
 from bl_operators.node import NodeInterfaceOperator
 
+import itertools
 from . import utils
 
 
@@ -133,7 +135,22 @@ if bpy.app.version >= (4, 5, 0):
 
 
         def get_nearest_panel_down(self, active_item):
-            pass
+            # If in top-most level, return None
+            if not hasattr(active_item.parent, "interface_items"):
+                return None
+            
+            items = active_item.parent.interface_items
+
+            # Find closest panel in the same level
+            try:
+                if active_item.item_type == "SOCKET":
+                    return next(i for i in items if i.item_type == "PANEL")
+                elif active_item.item_type == "PANEL":
+                    return next(i[1] for i in itertools.pairwise(items) if i[0] == active_item)
+
+            # If no panels in current level, recurse up one level
+            except StopIteration:
+                return self.get_nearest_panel_down(active_item.parent)
 
 
         def execute(self, context):
@@ -148,6 +165,12 @@ if bpy.app.version >= (4, 5, 0):
                         target_panel = self.get_nearest_panel_up(active_item)
                     elif self.direction == "DOWN":
                         target_panel = self.get_nearest_panel_down(active_item)
+
+                    if target_panel is not None:
+                        has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
+                        interface.move_to_parent(active_item, target_panel, has_panel_toggle)
+                    else:
+                        return {'CANCELLED'}
 
             else:
                 interface.move(active_item, active_item.position + offset)
