@@ -179,13 +179,17 @@ if bpy.app.version >= (4, 5, 0):
         def get_nearest_panel_up(self, active_item):
             if utils.is_panel(active_item):
                 target = self.adjacent_panel(active_item, self.direction)
+                if target is not None:
+                    return target
+                else:
+                    return active_item.parent.parent
             else:
                 target = self.adjacent_panel(active_item.parent, self.direction)
 
-            if target is not None:
-                return self.next_panel_up(target)
-            else:
-                return active_item.parent.parent
+                if target is not None:
+                    return self.next_panel_up(target)
+                else:
+                    return active_item.parent.parent
 
         def get_nearest_panel_down(self, active_item):
             if utils.is_panel(active_item):
@@ -210,7 +214,10 @@ if bpy.app.version >= (4, 5, 0):
             if self.should_change_parents(active_item):
                 if self.direction == "UP":
                     target_panel = self.get_nearest_panel_up(active_item)
-                    target_index = active_item.parent.position
+                    if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
+                        target_index = active_item.parent.position
+                    else:
+                        target_index = len(target_panel.interface_items)
                     
                 elif self.direction == "DOWN":
                     target_panel = self.get_nearest_panel_down(active_item)
