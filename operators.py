@@ -89,23 +89,8 @@ if bpy.app.version >= (4, 5, 0):
                 tree.interface.active is not None
             ))
 
-        @staticmethod
-        def similar_items(active_item):
-            items = active_item.parent.interface_items
-
-            if active_item.item_type == "PANEL":
-                similar_items = filter(utils.is_panel, items)
-            elif active_item.in_out == "INPUT":
-                similar_items = filter(utils.is_input, items)
-            elif active_item.in_out == "OUTPUT":
-                similar_items = filter(utils.is_output, items)
-            else:
-                raise ValueError(f"Unrecognized Type: \"{active_item.item_type - getattr(active_item, 'in_out', None)}\"")
-
-            return tuple(similar_items)
-
         def should_change_parents(self, active_item):
-            similar_items = self.similar_items(active_item)
+            similar_items = utils.similar_items(active_item)
             last_index = (len(similar_items) - 1)
             in_base_panel = active_item.parent.parent is None
 

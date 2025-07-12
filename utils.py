@@ -72,6 +72,21 @@ def is_panel(item):
     return compare_attributes(item, item_type="PANEL")
 
 
+def similar_items(item):
+    items = item.parent.interface_items
+
+    if item.item_type == "PANEL":
+        similar_items = filter(is_panel, items)
+    elif item.in_out == "INPUT":
+        similar_items = filter(is_input, items)
+    elif item.in_out == "OUTPUT":
+        similar_items = filter(is_output, items)
+    else:
+        raise ValueError(f"Unrecognized Type: \"{item.item_type - getattr(item, 'in_out', None)}\"")
+
+    return tuple(similar_items)
+
+
 def get_panel_toggle(panel):
     try:
         first_item = panel.interface_items[0]
