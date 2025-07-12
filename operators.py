@@ -93,16 +93,14 @@ if bpy.app.version >= (4, 5, 0):
         def similar_items(active_item):
             items = active_item.parent.interface_items
 
-            if active_item.item_type == "SOCKET":
-                if active_item.in_out == "INPUT":
-                    similar_items = (item for item in items if utils.compare_attributes(item, item_type=active_item.item_type, in_out=active_item.in_out) and not utils.is_panel_toggle(item))
-                else:
-                    similar_items = (item for item in items if utils.compare_attributes(item, item_type=active_item.item_type, in_out=active_item.in_out))
-
-            elif active_item.item_type == "PANEL":
-                similar_items = (item for item in items if utils.compare_attributes(item, item_type=active_item.item_type))
+            if active_item.item_type == "PANEL":
+                similar_items = filter(utils.is_panel, items)
+            elif active_item.in_out == "INPUT":
+                similar_items = filter(utils.is_input, items)
+            elif active_item.in_out == "OUTPUT":
+                similar_items = filter(utils.is_output, items)
             else:
-                raise ValueError(f"Unrecognized Type: \"{active_item.item_type}\"")
+                raise ValueError(f"Unrecognized Type: \"{active_item.item_type - getattr(active_item, 'in_out', None)}\"")
 
             return tuple(similar_items)
 
