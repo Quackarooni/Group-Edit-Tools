@@ -60,106 +60,154 @@ class GROUP_TOOLS_OT_copy_from_active(Operator):
         return {'FINISHED'}
 
 
-class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
-    '''Move the active interface item to the specified direction'''
-    bl_idname = "group_edit_tools.active_interface_item_move"
-    bl_label = "Move Item"
-    bl_options = {'REGISTER', 'UNDO'}
+if bpy.app.version >= (4, 5, 0):
+    class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
+        '''Move the active interface item to the specified direction'''
+        bl_idname = "group_edit_tools.active_interface_item_move"
+        bl_label = "Move Item"
+        bl_options = {'REGISTER', 'UNDO'}
 
-    direction: EnumProperty(
-        name="Direction",
-        description="Specifies which location the active item is moved to",
-        items=(
-            ('UP', "Move Up", ""),
-            ('DOWN', "Move Down", "")
-        ),
-    )
+        direction: EnumProperty(
+            name="Direction",
+            description="Specifies which location the active item is moved to",
+            items=(
+                ('UP', "Move Up", ""),
+                ('DOWN', "Move Down", "")
+            ),
+        )
 
-    @classmethod
-    @utils.return_false_when(AttributeError)
-    def poll(cls, context):
-        tree = context.group_edit_tree_to_edit
+        @classmethod
+        @utils.return_false_when(AttributeError)
+        def poll(cls, context):
+            tree = context.group_edit_tree_to_edit
 
-        return all((
-            tree is not None,
-            not tree.is_embedded_data,
-            tree.interface.active is not None
-        ))
+            return all((
+                tree is not None,
+                not tree.is_embedded_data,
+                tree.interface.active is not None
+            ))
 
-    @staticmethod
-    def fetch_all_parents(interface):
-        # The root panel that sockets are parented to by default is not directly accessible
-        # Hence we retrieve it by creating a new socket and getting its parent
-        new_socket = interface.new_socket(name="DUMMY_SOCKET")
-        yield new_socket.parent
-        interface.remove(new_socket)
+        @staticmethod
+        def similar_items(active_item):
+            items = active_item.parent.interface_items
 
-        # Retrieve all other panels
-        for item in interface.items_tree:
-            if item.item_type == 'PANEL':
-                yield item
+            if active_item.item_type == "SOCKET":
+                if active_item.in_out == "INPUT":
+                    similar_items = (item for item in items if utils.compare_attributes(item, item_type=active_item.item_type, in_out=active_item.in_out) and not utils.is_panel_toggle(item))
+                else:
+                    similar_items = (item for item in items if utils.compare_attributes(item, item_type=active_item.item_type, in_out=active_item.in_out))
 
-    @staticmethod
-    def get_prev_parent(parents, current_parent):
-        prev_parent = parents[0]
+            elif active_item.item_type == "PANEL":
+                similar_items = (item for item in items if utils.compare_attributes(item, item_type=active_item.item_type))
+            else:
+                raise ValueError(f"Unrecognized Type: \"{active_item.item_type}\"")
 
-        for parent in parents:
-            if parent == current_parent:
-                break
+            return tuple(similar_items)
 
-            prev_parent = parent
-        
-        return prev_parent
+        def should_change_parents(self, active_item):
+            similar_items = self.similar_items(active_item)
+            last_index = (len(similar_items) - 1)
+            in_base_panel = active_item.parent.parent is None
 
-    @staticmethod
-    def get_next_parent(parents, current_parent):
-        iter_parents = iter(parents)
-        for parent in iter_parents:
-            if parent == current_parent:
-                break
+            for i, item in enumerate(similar_items):
+                if item == active_item:
+                    break
 
-        try:
-            next_parent = next(iter_parents)
-        except StopIteration:
-            next_parent = parent
-        
-        return next_parent
+            if active_item.item_type != "PANEL":
+                if self.direction == "UP":
+                    return i == 0 and not in_base_panel
+                else:
+                    return i == last_index
+            else:
+                if not in_base_panel:
+                    return True
+                else:
+                    if self.direction == "UP":
+                        return not (i == 0)
+                    else:
+                        return not (i == last_index)
 
-    if bpy.app.version >= (4, 5, 0):
+
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
             active_item = interface.active
-
             offset = -1 if self.direction == 'UP' else 2
 
-            old_position = active_item.position
-            
-            try:
-                adjacent_item = interface.items_tree[active_item.index + offset]
-            except IndexError:
-                adjacent_item = None
-    
-            is_next_to_toggle = utils.is_panel_toggle(adjacent_item)
-            interface.move(active_item, active_item.position + offset)
-
-            if is_next_to_toggle or (old_position == active_item.position and active_item.item_type == 'SOCKET'):
-                parents = tuple(self.fetch_all_parents(interface))
-
-                if self.direction == 'UP':
-                    new_parent = self.get_prev_parent(parents, active_item.parent)
-                    new_position = len(new_parent.interface_items)
-                else:
-                    new_parent = self.get_next_parent(parents, active_item.parent)
-                    new_position = 0 + bool(utils.get_panel_toggle(new_parent))
-
-                if new_parent != active_item.parent:
-                    interface.move_to_parent(active_item, new_parent, new_position)
-                else:
-                    return {'CANCELLED'}
+            self.report({'INFO'}, f"{self.should_change_parents(active_item)}")
+            if self.should_change_parents(active_item):
+                pass
+            else:
+                interface.move(active_item, active_item.position + offset)
 
             interface.active_index = active_item.index
             return {'FINISHED'}
-    else:
+        
+else:
+    class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
+        '''Move the active interface item to the specified direction'''
+        bl_idname = "group_edit_tools.active_interface_item_move"
+        bl_label = "Move Item"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        direction: EnumProperty(
+            name="Direction",
+            description="Specifies which location the active item is moved to",
+            items=(
+                ('UP', "Move Up", ""),
+                ('DOWN', "Move Down", "")
+            ),
+        )
+
+        @classmethod
+        @utils.return_false_when(AttributeError)
+        def poll(cls, context):
+            tree = context.group_edit_tree_to_edit
+
+            return all((
+                tree is not None,
+                not tree.is_embedded_data,
+                tree.interface.active is not None
+            ))
+
+        @staticmethod
+        def fetch_all_parents(interface):
+            # The root panel that sockets are parented to by default is not directly accessible
+            # Hence we retrieve it by creating a new socket and getting its parent
+            new_socket = interface.new_socket(name="DUMMY_SOCKET")
+            yield new_socket.parent
+            interface.remove(new_socket)
+
+            # Retrieve all other panels
+            for item in interface.items_tree:
+                if item.item_type == 'PANEL':
+                    yield item
+
+        @staticmethod
+        def get_prev_parent(parents, current_parent):
+            prev_parent = parents[0]
+
+            for parent in parents:
+                if parent == current_parent:
+                    break
+
+                prev_parent = parent
+            
+            return prev_parent
+
+        @staticmethod
+        def get_next_parent(parents, current_parent):
+            iter_parents = iter(parents)
+            for parent in iter_parents:
+                if parent == current_parent:
+                    break
+
+            try:
+                next_parent = next(iter_parents)
+            except StopIteration:
+                next_parent = parent
+            
+            return next_parent
+
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
             active_item = interface.active
