@@ -128,6 +128,14 @@ if bpy.app.version >= (4, 5, 0):
                         return not (i == last_index)
 
 
+        def get_nearest_panel_up(self, active_item):
+            pass
+
+
+        def get_nearest_panel_down(self, active_item):
+            pass
+
+
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
             active_item = interface.active
@@ -135,7 +143,12 @@ if bpy.app.version >= (4, 5, 0):
 
             self.report({'INFO'}, f"{self.should_change_parents(active_item)}")
             if self.should_change_parents(active_item):
-                pass
+                if active_item.item_type == "SOCKET":
+                    if self.direction == "UP":
+                        target_panel = self.get_nearest_panel_up(active_item)
+                    elif self.direction == "DOWN":
+                        target_panel = self.get_nearest_panel_down(active_item)
+
             else:
                 interface.move(active_item, active_item.position + offset)
 
