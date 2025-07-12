@@ -142,6 +142,13 @@ if bpy.app.version >= (4, 5, 0):
                 return None
             
         @staticmethod
+        def firstmost_internal_panel(panel):
+            try:
+                return next(i for i in filter(utils.is_panel, panel.interface_items))
+            except StopIteration:
+                return
+            
+        @staticmethod
         def lastmost_internal_panel(panel):
             result = panel
             try:
@@ -151,6 +158,18 @@ if bpy.app.version >= (4, 5, 0):
                 pass
 
             return result
+        
+        def next_panel_down(self, panel):
+            target = panel
+            try:
+                while True:
+                    panel = self.adjacent_panel(target.parent, self.direction)
+                    if panel is not None:
+                        return panel
+                    
+                    target = target.parent
+            except AttributeError:
+                return None
 
         def get_nearest_panel_up(self, active_item):
             if utils.is_panel(active_item):
@@ -164,23 +183,19 @@ if bpy.app.version >= (4, 5, 0):
                 return active_item.parent.parent
 
         def get_nearest_panel_down(self, active_item):
-            # If in top-most level, return None
-            if not hasattr(active_item.parent, "interface_items"):
-                return None
-            
-            items = active_item.parent.interface_items
+            if utils.is_panel(active_item):
+                target = self.adjacent_panel(active_item, self.direction)
+                if target is not None:
+                    return target
+                else:
+                    return active_item.parent.parent
 
-            # Find closest panel in the same level
-            try:
-                if active_item.item_type == "SOCKET":
-                    return next(i for i in items if i.item_type == "PANEL")
-                elif active_item.item_type == "PANEL":
-                    return next(i[1] for i in itertools.pairwise(items) if i[0] == active_item)
-
-            # If no panels in current level, recurse up one level
-            except StopIteration:
-                return self.get_nearest_panel_down(active_item.parent)
-
+            else:
+                target = self.firstmost_internal_panel(active_item.parent)
+                if target is not None:
+                    return target
+                else:
+                    return self.next_panel_down(active_item)
 
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
@@ -191,10 +206,14 @@ if bpy.app.version >= (4, 5, 0):
                 if self.direction == "UP":
                     target_panel = self.get_nearest_panel_up(active_item)
                     target_index = active_item.parent.position
+                    
                 elif self.direction == "DOWN":
                     target_panel = self.get_nearest_panel_down(active_item)
-                    has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
-                    target_index = has_panel_toggle
+                    if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
+                        target_index = active_item.parent.position + 1
+                    else:
+                        has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
+                        target_index = has_panel_toggle
 
                 if target_panel is not None:
                     interface.move_to_parent(active_item, target_panel, target_index)
