@@ -233,7 +233,11 @@ if bpy.app.version >= (4, 5, 0):
                     return {'CANCELLED'}
 
             else:
+                old_position = active_item.position
                 interface.move(active_item, active_item.position + offset)
+
+                if old_position == active_item.position:
+                    return {'CANCELLED'}
 
             interface.active_index = active_item.index
             return {'FINISHED'}
