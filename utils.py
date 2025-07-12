@@ -61,11 +61,11 @@ def is_panel_toggle(item):
 
 
 def is_input(item):
-    return compare_attributes(item, item_type="SOCKET", in_out="INPUT",is_panel_toggle=True)
+    return compare_attributes(item, item_type="SOCKET", in_out="INPUT",is_panel_toggle=False)
 
 
 def is_output(item):
-    return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT", is_panel_toggle=True)
+    return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT", is_panel_toggle=False)
 
 
 def is_panel(item):
