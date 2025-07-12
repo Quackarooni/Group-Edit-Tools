@@ -149,7 +149,7 @@ if bpy.app.version >= (4, 5, 0):
                 return
             
         @staticmethod
-        def lastmost_internal_panel(panel):
+        def next_panel_up(panel):
             result = panel
             try:
                 while True:
@@ -178,7 +178,7 @@ if bpy.app.version >= (4, 5, 0):
                 target = self.adjacent_panel(active_item.parent, self.direction)
 
             if target is not None:
-                return self.lastmost_internal_panel(target)
+                return self.next_panel_up(target)
             else:
                 return active_item.parent.parent
 
