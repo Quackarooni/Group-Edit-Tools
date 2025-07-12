@@ -153,17 +153,14 @@ if bpy.app.version >= (4, 5, 0):
             except StopIteration:
                 return None
             
-        @staticmethod
-        def next_panel_up(panel):
-            result = panel
-            try:
-                while True:
-                    result = next(i for i in filter(utils.is_panel, reversed(result.interface_items)))
-            except StopIteration:
-                pass
+        def next_panel_up(self, panel):
+            while True:
+                target = panel
+                panel = self.endpoint_panel(target, self.direction)
+                
+                if panel is None:
+                    return target
 
-            return result
-        
         def next_panel_down(self, panel):
             target = panel
             try:
