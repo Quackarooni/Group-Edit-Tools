@@ -196,7 +196,7 @@ if bpy.app.version >= (4, 5, 0):
                     return active_item.parent.parent
 
             else:
-                target = self.firstmost_internal_panel(active_item.parent)
+                target = self.endpoint_panel(active_item.parent, self.direction)
                 if target is not None:
                     return target
                 else:
