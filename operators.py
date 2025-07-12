@@ -128,11 +128,40 @@ if bpy.app.version >= (4, 5, 0):
                         return not (i == 0)
                     else:
                         return not (i == last_index)
+        
+        @staticmethod
+        def adjacent_panel(panel, direction):
+            items = filter(utils.is_panel, panel.parent.interface_items)
 
+            try:
+                if direction == "UP":
+                    return next(i[0] for i in itertools.pairwise(items) if i[1] == panel)
+                elif direction == "DOWN":
+                    return next(i[1] for i in itertools.pairwise(items) if i[0] == panel)
+            except StopIteration:
+                return None
+            
+        @staticmethod
+        def lastmost_internal_panel(panel):
+            result = panel
+            try:
+                while True:
+                    result = next(i for i in filter(utils.is_panel, reversed(result.interface_items)))
+            except StopIteration:
+                pass
+
+            return result
 
         def get_nearest_panel_up(self, active_item):
-            pass
+            if utils.is_panel(active_item):
+                target = self.adjacent_panel(active_item, self.direction)
+            else:
+                target = self.adjacent_panel(active_item.parent, self.direction)
 
+            if target is not None:
+                return self.lastmost_internal_panel(target)
+            else:
+                return active_item.parent.parent
 
         def get_nearest_panel_down(self, active_item):
             # If in top-most level, return None
