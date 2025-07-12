@@ -131,6 +131,9 @@ if bpy.app.version >= (4, 5, 0):
         
         @staticmethod
         def adjacent_panel(panel, direction):
+            if panel.parent is None:
+                return None
+
             items = filter(utils.is_panel, panel.parent.interface_items)
 
             try:
@@ -163,15 +166,15 @@ if bpy.app.version >= (4, 5, 0):
 
         def next_panel_down(self, panel):
             target = panel
-            try:
-                while True:
-                    panel = self.adjacent_panel(target.parent, self.direction)
-                    if panel is not None:
-                        return panel
-                    
-                    target = target.parent
-            except AttributeError:
-                return None
+            while True:
+                if target.parent is None:
+                    return None
+
+                panel = self.adjacent_panel(target, self.direction)
+                if panel is not None:
+                    return panel
+                
+                target = target.parent
 
         def get_nearest_panel_up(self, active_item):
             if utils.is_panel(active_item):
