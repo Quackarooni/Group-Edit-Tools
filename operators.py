@@ -142,11 +142,16 @@ if bpy.app.version >= (4, 5, 0):
                 return None
             
         @staticmethod
-        def firstmost_internal_panel(panel):
+        def endpoint_panel(panel, direction):
+            items = panel.interface_items
+
             try:
-                return next(i for i in filter(utils.is_panel, panel.interface_items))
+                if direction == "UP":
+                    return next(i for i in filter(utils.is_panel, reversed(items)))
+                elif direction == "DOWN":
+                    return next(i for i in filter(utils.is_panel, items))
             except StopIteration:
-                return
+                return None
             
         @staticmethod
         def next_panel_up(panel):
