@@ -118,16 +118,13 @@ if bpy.app.version >= (4, 5, 0):
             if active_item.item_type != "PANEL":
                 if self.direction == "UP":
                     return i == 0 and not in_base_panel
-                else:
-                    return i == last_index
+                elif self.direction == "DOWN":
+                    return i == last_index 
             else:
-                if not in_base_panel:
-                    return True
-                else:
-                    if self.direction == "UP":
-                        return not (i == 0)
-                    else:
-                        return not (i == last_index)
+                if self.direction == "UP":
+                    return not (i == 0) or not in_base_panel
+                elif self.direction == "DOWN":
+                    return not (i == last_index) or not in_base_panel
         
         @staticmethod
         def adjacent_panel(panel, direction):
