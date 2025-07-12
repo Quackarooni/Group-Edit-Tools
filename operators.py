@@ -181,67 +181,62 @@ if bpy.app.version >= (4, 5, 0):
                 target = self.adjacent_panel(active_item, self.direction)
                 if target is not None:
                     return target
-                else:
-                    return active_item.parent.parent
             else:
                 target = self.adjacent_panel(active_item.parent, self.direction)
-
                 if target is not None:
                     return self.next_panel_up(target)
-                else:
-                    return active_item.parent.parent
+
+            return active_item.parent.parent
 
         def get_nearest_panel_down(self, active_item):
             if utils.is_panel(active_item):
                 target = self.adjacent_panel(active_item, self.direction)
-                if target is not None:
-                    return target
-                else:
+                if target is None:
                     return active_item.parent.parent
-
             else:
                 target = self.endpoint_panel(active_item.parent, self.direction)
-                if target is not None:
-                    return target
-                else:
+                if target is None:
                     return self.next_panel_down(active_item)
+                
+            return target
 
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
             active_item = interface.active
             offset = -1 if self.direction == 'UP' else 2
 
-            if self.should_change_parents(active_item):
-                if self.direction == "UP":
-                    target_panel = self.get_nearest_panel_up(active_item)
-                    if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
-                        target_index = active_item.parent.position
-                    else:
-                        target_index = len(target_panel.interface_items)
-                    
-                elif self.direction == "DOWN":
-                    target_panel = self.get_nearest_panel_down(active_item)
-                    if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
-                        target_index = active_item.parent.position + 1
-                    else:
-                        has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
-                        target_index = has_panel_toggle
-
-                if target_panel is not None:
-                    interface.move_to_parent(active_item, target_panel, target_index)
-                else:
-                    return {'CANCELLED'}
-
-            else:
+            if not self.should_change_parents(active_item):
                 old_position = active_item.position
                 interface.move(active_item, active_item.position + offset)
 
                 if old_position == active_item.position:
                     return {'CANCELLED'}
 
+                interface.active_index = active_item.index
+                return {'FINISHED'}
+
+            if self.direction == "UP":
+                target_panel = self.get_nearest_panel_up(active_item)
+                if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
+                    target_index = active_item.parent.position
+                else:
+                    target_index = len(target_panel.interface_items)
+                
+            elif self.direction == "DOWN":
+                target_panel = self.get_nearest_panel_down(active_item)
+                if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
+                    target_index = active_item.parent.position + 1
+                else:
+                    has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
+                    target_index = has_panel_toggle
+
+            if target_panel is None:
+                return {'CANCELLED'}
+            
+            interface.move_to_parent(active_item, target_panel, target_index)
             interface.active_index = active_item.index
             return {'FINISHED'}
-        
+
 else:
     class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
         '''Move the active interface item to the specified direction'''
