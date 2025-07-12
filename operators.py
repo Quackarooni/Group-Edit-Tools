@@ -158,19 +158,19 @@ if bpy.app.version >= (4, 5, 0):
             active_item = interface.active
             offset = -1 if self.direction == 'UP' else 2
 
-            self.report({'INFO'}, f"{self.should_change_parents(active_item)}")
             if self.should_change_parents(active_item):
-                if active_item.item_type == "SOCKET":
-                    if self.direction == "UP":
-                        target_panel = self.get_nearest_panel_up(active_item)
-                    elif self.direction == "DOWN":
-                        target_panel = self.get_nearest_panel_down(active_item)
+                if self.direction == "UP":
+                    target_panel = self.get_nearest_panel_up(active_item)
+                    target_index = active_item.parent.position
+                elif self.direction == "DOWN":
+                    target_panel = self.get_nearest_panel_down(active_item)
+                    has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
+                    target_index = has_panel_toggle
 
-                    if target_panel is not None:
-                        has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
-                        interface.move_to_parent(active_item, target_panel, has_panel_toggle)
-                    else:
-                        return {'CANCELLED'}
+                if target_panel is not None:
+                    interface.move_to_parent(active_item, target_panel, target_index)
+                else:
+                    return {'CANCELLED'}
 
             else:
                 interface.move(active_item, active_item.position + offset)
