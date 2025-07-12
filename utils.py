@@ -60,6 +60,18 @@ def is_panel_toggle(item):
     return compare_attributes(item, in_out="INPUT", socket_type="NodeSocketBool", is_panel_toggle=True)
 
 
+def is_input(item):
+    return compare_attributes(item, item_type="SOCKET", in_out="INPUT",is_panel_toggle=True)
+
+
+def is_output(item):
+    return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT", is_panel_toggle=True)
+
+
+def is_panel(item):
+    return compare_attributes(item, item_type="PANEL")
+
+
 def get_panel_toggle(panel):
     try:
         first_item = panel.interface_items[0]
