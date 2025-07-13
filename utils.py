@@ -57,7 +57,43 @@ def is_boolean_input(item):
 
 
 def is_panel_toggle(item):
-    return compare_attributes(item, in_out="INPUT", socket_type="NodeSocketBool", is_panel_toggle=True, )
+    return compare_attributes(item, in_out="INPUT", socket_type="NodeSocketBool", is_panel_toggle=True)
+
+
+if bpy.app.version >= (4, 5, 0):
+    def is_input(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="INPUT",is_panel_toggle=False)
+
+
+    def is_output(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT", is_panel_toggle=False)
+
+else:
+    def is_input(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="INPUT")
+
+
+    def is_output(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT")
+
+
+def is_panel(item):
+    return compare_attributes(item, item_type="PANEL")
+
+
+def similar_items(item):
+    items = item.parent.interface_items
+
+    if item.item_type == "PANEL":
+        similar_items = filter(is_panel, items)
+    elif item.in_out == "INPUT":
+        similar_items = filter(is_input, items)
+    elif item.in_out == "OUTPUT":
+        similar_items = filter(is_output, items)
+    else:
+        raise ValueError(f"Unrecognized Type: \"{item.item_type - getattr(item, 'in_out', None)}\"")
+
+    return tuple(similar_items)
 
 
 def get_panel_toggle(panel):

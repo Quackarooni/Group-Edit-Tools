@@ -1,9 +1,11 @@
+
 import bpy
 from bpy.types import Operator
 from bpy.props import EnumProperty, IntProperty
 
 from bl_operators.node import NodeInterfaceOperator
 
+import itertools
 from . import utils
 
 
@@ -60,106 +62,227 @@ class GROUP_TOOLS_OT_copy_from_active(Operator):
         return {'FINISHED'}
 
 
-class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
-    '''Move the active interface item to the specified direction'''
-    bl_idname = "group_edit_tools.active_interface_item_move"
-    bl_label = "Move Item"
-    bl_options = {'REGISTER', 'UNDO'}
+if bpy.app.version >= (4, 4, 0):
+    class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
+        '''Move the active interface item to the specified direction'''
+        bl_idname = "group_edit_tools.active_interface_item_move"
+        bl_label = "Move Item"
+        bl_options = {'REGISTER', 'UNDO'}
 
-    direction: EnumProperty(
-        name="Direction",
-        description="Specifies which location the active item is moved to",
-        items=(
-            ('UP', "Move Up", ""),
-            ('DOWN', "Move Down", "")
-        ),
-    )
+        direction: EnumProperty(
+            name="Direction",
+            description="Specifies which location the active item is moved to",
+            items=(
+                ('UP', "Move Up", ""),
+                ('DOWN', "Move Down", "")
+            ),
+        )
 
-    @classmethod
-    @utils.return_false_when(AttributeError)
-    def poll(cls, context):
-        tree = context.group_edit_tree_to_edit
+        @classmethod
+        @utils.return_false_when(AttributeError)
+        def poll(cls, context):
+            tree = context.group_edit_tree_to_edit
 
-        return all((
-            tree is not None,
-            not tree.is_embedded_data,
-            tree.interface.active is not None
-        ))
+            return all((
+                tree is not None,
+                not tree.is_embedded_data,
+                tree.interface.active is not None
+            ))
 
-    @staticmethod
-    def fetch_all_parents(interface):
-        # The root panel that sockets are parented to by default is not directly accessible
-        # Hence we retrieve it by creating a new socket and getting its parent
-        new_socket = interface.new_socket(name="DUMMY_SOCKET")
-        yield new_socket.parent
-        interface.remove(new_socket)
+        def should_change_parents(self, active_item):
+            similar_items = utils.similar_items(active_item)
+            last_index = (len(similar_items) - 1)
+            in_base_panel = active_item.parent.parent is None
 
-        # Retrieve all other panels
-        for item in interface.items_tree:
-            if item.item_type == 'PANEL':
-                yield item
+            for i, item in enumerate(similar_items):
+                if item == active_item:
+                    break
 
-    @staticmethod
-    def get_prev_parent(parents, current_parent):
-        prev_parent = parents[0]
-
-        for parent in parents:
-            if parent == current_parent:
-                break
-
-            prev_parent = parent
+            if utils.is_panel(active_item):
+                if self.direction == "UP":
+                    return not (i == 0) or not in_base_panel
+                elif self.direction == "DOWN":
+                    return not (i == last_index) or not in_base_panel
+            else:
+                if self.direction == "UP":
+                    return i == 0 and not in_base_panel
+                elif self.direction == "DOWN":
+                    return i == last_index 
         
-        return prev_parent
+        @staticmethod
+        def adjacent_panel(panel, direction):
+            if panel.parent is None:
+                return None
 
-    @staticmethod
-    def get_next_parent(parents, current_parent):
-        iter_parents = iter(parents)
-        for parent in iter_parents:
-            if parent == current_parent:
-                break
+            items = filter(utils.is_panel, panel.parent.interface_items)
 
-        try:
-            next_parent = next(iter_parents)
-        except StopIteration:
-            next_parent = parent
-        
-        return next_parent
+            try:
+                if direction == "UP":
+                    return next(i[0] for i in itertools.pairwise(items) if i[1] == panel)
+                elif direction == "DOWN":
+                    return next(i[1] for i in itertools.pairwise(items) if i[0] == panel)
+            except StopIteration:
+                return None
+            
+        @staticmethod
+        def endpoint_panel(panel, direction):
+            items = panel.interface_items
 
-    if bpy.app.version >= (4, 5, 0):
+            try:
+                if direction == "UP":
+                    return next(i for i in filter(utils.is_panel, reversed(items)))
+                elif direction == "DOWN":
+                    return next(i for i in filter(utils.is_panel, items))
+            except StopIteration:
+                return None
+            
+        def next_panel_up(self, panel):
+            while True:
+                target = panel
+                panel = self.endpoint_panel(target, self.direction)
+                
+                if panel is None:
+                    return target
+
+        def next_panel_down(self, panel):
+            target = panel
+            while True:
+                if target.parent is None:
+                    return None
+
+                panel = self.adjacent_panel(target, self.direction)
+                if panel is not None:
+                    return panel
+                
+                target = target.parent
+
+        def get_nearest_panel_up(self, active_item):
+            if utils.is_panel(active_item):
+                target = self.adjacent_panel(active_item, self.direction)
+                if target is not None:
+                    return target
+            else:
+                target = self.adjacent_panel(active_item.parent, self.direction)
+                if target is not None:
+                    return self.next_panel_up(target)
+
+            return active_item.parent.parent
+
+        def get_nearest_panel_down(self, active_item):
+            if utils.is_panel(active_item):
+                target = self.adjacent_panel(active_item, self.direction)
+                if target is None:
+                    return active_item.parent.parent
+            else:
+                target = self.endpoint_panel(active_item.parent, self.direction)
+                if target is None:
+                    return self.next_panel_down(active_item)
+                
+            return target
+
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
             active_item = interface.active
-
             offset = -1 if self.direction == 'UP' else 2
 
-            old_position = active_item.position
-            
-            try:
-                adjacent_item = interface.items_tree[active_item.index + offset]
-            except IndexError:
-                adjacent_item = None
-    
-            is_next_to_toggle = utils.is_panel_toggle(adjacent_item)
-            interface.move(active_item, active_item.position + offset)
+            if not self.should_change_parents(active_item):
+                old_position = active_item.position
+                interface.move(active_item, active_item.position + offset)
 
-            if is_next_to_toggle or (old_position == active_item.position and active_item.item_type == 'SOCKET'):
-                parents = tuple(self.fetch_all_parents(interface))
-
-                if self.direction == 'UP':
-                    new_parent = self.get_prev_parent(parents, active_item.parent)
-                    new_position = len(new_parent.interface_items)
-                else:
-                    new_parent = self.get_next_parent(parents, active_item.parent)
-                    new_position = 0 + bool(utils.get_panel_toggle(new_parent))
-
-                if new_parent != active_item.parent:
-                    interface.move_to_parent(active_item, new_parent, new_position)
-                else:
+                if old_position == active_item.position:
                     return {'CANCELLED'}
 
+                interface.active_index = active_item.index
+                return {'FINISHED'}
+
+            if self.direction == "UP":
+                target_panel = self.get_nearest_panel_up(active_item)
+                if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
+                    target_index = active_item.parent.position
+                else:
+                    target_index = len(target_panel.interface_items)
+                
+            elif self.direction == "DOWN":
+                target_panel = self.get_nearest_panel_down(active_item)
+                if utils.is_panel(active_item) and (target_panel == active_item.parent.parent):
+                    target_index = active_item.parent.position + 1
+                else:
+                    has_panel_toggle = utils.get_panel_toggle(target_panel) is not None
+                    target_index = has_panel_toggle
+
+            if target_panel is None:
+                return {'CANCELLED'}
+            
+            interface.move_to_parent(active_item, target_panel, target_index)
             interface.active_index = active_item.index
             return {'FINISHED'}
-    else:
+
+else:
+    class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
+        '''Move the active interface item to the specified direction'''
+        bl_idname = "group_edit_tools.active_interface_item_move"
+        bl_label = "Move Item"
+        bl_options = {'REGISTER', 'UNDO'}
+
+        direction: EnumProperty(
+            name="Direction",
+            description="Specifies which location the active item is moved to",
+            items=(
+                ('UP', "Move Up", ""),
+                ('DOWN', "Move Down", "")
+            ),
+        )
+
+        @classmethod
+        @utils.return_false_when(AttributeError)
+        def poll(cls, context):
+            tree = context.group_edit_tree_to_edit
+
+            return all((
+                tree is not None,
+                not tree.is_embedded_data,
+                tree.interface.active is not None
+            ))
+
+        @staticmethod
+        def fetch_all_parents(interface):
+            # The root panel that sockets are parented to by default is not directly accessible
+            # Hence we retrieve it by creating a new socket and getting its parent
+            new_socket = interface.new_socket(name="DUMMY_SOCKET")
+            yield new_socket.parent
+            interface.remove(new_socket)
+
+            # Retrieve all other panels
+            for item in interface.items_tree:
+                if item.item_type == 'PANEL':
+                    yield item
+
+        @staticmethod
+        def get_prev_parent(parents, current_parent):
+            prev_parent = parents[0]
+
+            for parent in parents:
+                if parent == current_parent:
+                    break
+
+                prev_parent = parent
+            
+            return prev_parent
+
+        @staticmethod
+        def get_next_parent(parents, current_parent):
+            iter_parents = iter(parents)
+            for parent in iter_parents:
+                if parent == current_parent:
+                    break
+
+            try:
+                next_parent = next(iter_parents)
+            except StopIteration:
+                next_parent = parent
+            
+            return next_parent
+
         def execute(self, context):
             interface = context.group_edit_tree_to_edit.interface
             active_item = interface.active
