@@ -62,7 +62,7 @@ class GROUP_TOOLS_OT_copy_from_active(Operator):
         return {'FINISHED'}
 
 
-if bpy.app.version >= (4, 5, 0):
+if bpy.app.version >= (4, 4, 0):
     class GROUP_TOOLS_OT_interface_item_move(NodeInterfaceOperator, Operator):
         '''Move the active interface item to the specified direction'''
         bl_idname = "group_edit_tools.active_interface_item_move"

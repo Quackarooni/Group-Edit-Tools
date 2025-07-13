@@ -60,12 +60,21 @@ def is_panel_toggle(item):
     return compare_attributes(item, in_out="INPUT", socket_type="NodeSocketBool", is_panel_toggle=True)
 
 
-def is_input(item):
-    return compare_attributes(item, item_type="SOCKET", in_out="INPUT",is_panel_toggle=False)
+if bpy.app.version >= (4, 5, 0):
+    def is_input(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="INPUT",is_panel_toggle=False)
 
 
-def is_output(item):
-    return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT", is_panel_toggle=False)
+    def is_output(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT", is_panel_toggle=False)
+
+else:
+    def is_input(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="INPUT")
+
+
+    def is_output(item):
+        return compare_attributes(item, item_type="SOCKET", in_out="OUTPUT")
 
 
 def is_panel(item):
